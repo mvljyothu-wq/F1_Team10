@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.DS_Store
+*.part
+received_files/*
+!received_files/.gitkeep
+logs/*
+!logs/.gitkeep
+data/work/
+results/work/
+demo_out/
+demo_out_sample.bin
+*.key
+udp_ai_transfer_package.zip
+data/work_live/

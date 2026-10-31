@@ -1,0 +1,341 @@
+<title>Presentation Speaking Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single reading column of numbered steps (one per slide), a sticky bar with the short/full toggle, prep and Q&A after. */
+:root{
+  --bg:#F5F8FB; --surface:#FFFFFF; --ink:#0B1D33; --muted:#4F6278; --line:#D9E2EC;
+  --accent:#007E99; --accent-soft:#E2F4F8; --say:#0B1D33; --warn:#9A5B00; --warn-soft:#FFF3DF;
+  --good:#1D7A46; --good-soft:#E3F4EA;
+  --f-display:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#08131F; --surface:#0F2133; --ink:#E6EEF6; --muted:#9BB0C4; --line:#21384F;
+  --accent:#3CC6E0; --accent-soft:#0E3343; --say:#F2F7FB; --warn:#F2B35A; --warn-soft:#3A2A10;
+  --good:#5BD08D; --good-soft:#123222; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#08131F; --surface:#0F2133; --ink:#E6EEF6; --muted:#9BB0C4; --line:#21384F;
+  --accent:#3CC6E0; --accent-soft:#0E3343; --say:#F2F7FB; --warn:#F2B35A; --warn-soft:#3A2A10;
+  --good:#5BD08D; --good-soft:#123222; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:820px;margin:0 auto;padding-block:40px 80px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:-.02em}
+h2{font-size:24px;font-weight:700;letter-spacing:-.01em}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.lede{color:var(--muted);font-size:18px;max-width:62ch;margin-top:12px}
+.eyebrow{font:600 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+code,.mono{font-family:var(--f-mono);font-size:.9em}
+code{background:var(--accent-soft);padding:1px 6px;border-radius:4px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);
+  border-bottom:1px solid var(--line);margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+  padding:10px max(16px,env(safe-area-inset-left,0px))}
+.bar-in{max-width:820px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.bar nav{display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+.bar a{color:var(--muted);text-decoration:none}
+.bar a:hover{color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{font:600 13px var(--f-body);border:0;background:none;color:var(--muted);padding:7px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg)}
+.seg button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+section{margin-top:56px;display:grid;gap:16px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.pitch{border-left:4px solid var(--accent)}
+.pitch p{font-size:18px;color:var(--say)}
+
+.check{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.check label{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.check input{width:18px;height:18px;margin-top:4px;accent-color:var(--accent);flex:none}
+.check input:checked + span{color:var(--muted);text-decoration:line-through}
+
+.flow{display:flex;flex-wrap:wrap;gap:8px;font-size:14px}
+.flow span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.flow span b{color:var(--accent);font-family:var(--f-mono);margin-right:6px}
+
+.steps{display:grid;gap:14px;counter-reset:none}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px;display:grid;gap:14px}
+.step-head{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+.num{font:600 13px var(--f-mono);color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:3px 8px;flex:none}
+.time{margin-left:auto;font:13px var(--f-mono);color:var(--muted)}
+.tag-skip{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--warn);background:var(--warn-soft);border-radius:4px;padding:2px 6px}
+.row{display:grid;grid-template-columns:96px 1fr;gap:12px}
+.row > *{min-width:0}
+.k{font:600 12px/1.9 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.say{font-size:17px;color:var(--say)}
+.say q{quotes:"\201C" "\201D"}
+.num-big{font:600 15px var(--f-mono);color:var(--good);background:var(--good-soft);border-radius:6px;padding:2px 8px;display:inline-block}
+.ask{border-top:1px dashed var(--line);padding-top:12px}
+.ask b{display:block;margin-bottom:2px}
+.ask p{color:var(--muted)}
+body.short .skip{display:none}
+
+.qa{display:grid;gap:10px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+summary{cursor:pointer;font-weight:600}
+details p{margin-top:8px;color:var(--muted)}
+
+.demo ol{margin:0;padding-left:22px;display:grid;gap:8px}
+pre{margin:0;background:var(--accent-soft);border-radius:8px;padding:12px 14px;overflow-x:auto;font:14px/1.5 var(--f-mono)}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tips .box{padding:16px 18px}
+.tips h3{font-size:15px;margin-bottom:4px}
+.tips p{color:var(--muted);font-size:15px}
+footer{margin-top:56px;color:var(--muted);font-size:14px}
+
+@media (max-width:560px){
+  .row{grid-template-columns:1fr;gap:2px}
+  .time{margin-left:0}
+}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <nav aria-label="Sections">
+      <a href="#before">Before</a><a href="#pitch">Pitch</a><a href="#steps">Slides</a><a href="#demo">Demo</a><a href="#questions">Questions</a>
+    </nav>
+    <div class="seg" role="group" aria-label="Talk length">
+      <button id="len-full" type="button" aria-pressed="true">Full · 10 min</button>
+      <button id="len-short" type="button" aria-pressed="false">Short · 7 min</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <p class="eyebrow">Computer Networks project · speaking guide</p>
+  <h1 style="margin-top:10px">How to present the AI-Adaptive UDP File Transfer project</h1>
+  <p class="lede">Go through the slides in order. For each one: what to show, what to say in plain words, the one number to remember, and the question a faculty member is most likely to ask.</p>
+
+  <section id="before">
+    <h2>Before you start</h2>
+    <div class="box">
+      <ul class="check" id="checklist">
+        <li><label><input type="checkbox" id="c1"><span>Open the deck <code>UDP_ML_Timeouts_Presentation.pptx</code> and switch to <b>Presenter View</b>. Your speaker notes are already on every slide.</span></label></li>
+        <li><label><input type="checkbox" id="c2"><span>Open Terminal, go to the project folder and start the lab: <code>cd ~/Documents/udp_ai_transfer</code> then <code>python3 lab_server.py</code></span></label></li>
+        <li><label><input type="checkbox" id="c3"><span>Open <code>http://localhost:8000</code> in the browser and scroll to the <b>Live lab</b>. Keep this tab ready for the demo.</span></label></li>
+        <li><label><input type="checkbox" id="c4"><span>Do one practice run in the lab so the first real run is not slow.</span></label></li>
+        <li><label><input type="checkbox" id="c5"><span>Remember three numbers: <b>420</b> transfers, <b>+4.3 %</b> faster, <b>12 %</b> less waste.</span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="pitch">
+    <h2>The 30-second version</h2>
+    <p class="lede" style="margin-top:0">Say this if someone asks “what does your project do?” or if you only get one minute.</p>
+    <div class="box pitch">
+      <p>UDP sends packets but never checks if they arrive. We built a reliable file transfer on top of UDP, like a mini TCP. The hard part is deciding how long to wait before resending a packet. Wait too little and you resend packets that were not lost. Wait too long and the transfer sits idle. TCP uses a fixed formula for this. We trained machine-learning models to choose the wait time instead, and tested everything on a simulated bad network: 420 transfers, every file verified. Our best version, ML plus a smart loss detector called RACK, was 4.3 % faster than TCP’s formula and wasted 12 % fewer packets.</p>
+    </div>
+  </section>
+
+  <section id="steps">
+    <h2>Slide by slide</h2>
+    <div class="flow" aria-label="Story of the talk">
+      <span><b>1–3</b>The problem</span><span><b>4–7</b>What we built</span><span><b>8–10</b>The ML and RACK</span><span><b>11–15</b>Results</span><span><b>16–18</b>Wrap up</span>
+    </div>
+    <p class="mono" style="color:var(--muted);font-size:13px" id="len-note">Full talk: all 18 slides, about 10 minutes.</p>
+
+    <div class="steps">
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 1</span><h3>Title</h3><span class="time">20 s</span></div>
+        <div class="row"><span class="k">Show</span><p>Title slide.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>Good morning. Our project is a reliable file transfer protocol built on UDP. We tested whether machine learning can decide when to resend a lost packet better than the formula TCP uses.</q></p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 2</span><h3>The problem</h3><span class="time">50 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The RTT histogram. Point at the long tail on the right.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>UDP does not resend lost packets, so we have to. The question is how long to wait for an acknowledgement. Too short, and we resend packets that were only late. That is waste. Too long, and we sit idle. That is slow. This chart is the round-trip time on one network. Most packets come back in about 65 ms, but some take much longer. So the right waiting time keeps changing.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">median 64.8 ms · 95th percentile 78.9 ms</span></p></div>
+        <div class="ask"><b>If asked: what is RTT?</b><p>Round-trip time. The time from sending a packet to getting its acknowledgement back.</p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 3</span><h3>What we did</h3><span class="time">30 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The contributions list.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>We did four things. One, built the reliable protocol. Two, built a network simulator that damages packets the same way every time, so the comparison is fair. Three, trained two ML timeout models. Four, added a smarter loss detector called RACK, and tested all of it in 420 transfers.</q></p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 4</span><h3>Architecture</h3><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>Sender → proxy → receiver diagram.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>There are three programs. The sender splits the file into packets. The receiver puts them back together. In the middle is our proxy. It acts like a bad internet connection: it drops, delays, duplicates and reorders packets. Because it uses a seed, the same seed causes exactly the same damage. So every strategy faces the identical network.</q></p></div>
+        <div class="ask"><b>If asked: why a simulator and not the real internet?</b><p>The real internet changes every second, so two runs are never comparable. The simulator lets us repeat the exact same conditions for every strategy.</p></div>
+      </article>
+
+      <article class="step skip">
+        <div class="step-head"><span class="num">Slide 5</span><h3>Packet header</h3><span class="tag-skip">skip if short</span><span class="time">30 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The 24-byte header diagram.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>Every packet has a 24-byte header with a type, a sequence number and a CRC-32 checksum to catch corrupted packets. The whole file is checked with SHA-256 at the end. A packet is at most 1,268 bytes on the wire. That is below 1,280, the smallest size IPv6 must carry, so packets are never split.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">24-byte header · 1,200-byte payload</span></p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 6</span><h3>Selective Repeat</h3><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The sender/receiver ladder diagram.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>We use Selective Repeat, from the CN syllabus. The sender can have 64 packets in flight. If one is lost, only that one is resent, not everything after it. The receiver stores out-of-order packets until the gap is filled.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">window = 64 packets</span></p></div>
+        <div class="ask"><b>If asked: why not Go-Back-N?</b><p>Go-Back-N resends the whole window after one loss. On a lossy network that wastes a lot. Selective Repeat resends only what was lost.</p></div>
+      </article>
+
+      <article class="step skip">
+        <div class="step-head"><span class="num">Slide 7</span><h3>TCP’s timeout formula</h3><span class="tag-skip">skip if short</span><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The RFC 6298 equations.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>This is the baseline: the formula TCP uses, from RFC 6298. Timeout equals the smoothed RTT plus 4 times the variation. If a timer fires, the timeout doubles. While building it we found a bug in our backoff: old timers kept raising the wait. Fixing it made one transfer go from 22 seconds to 4.3 seconds.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">RTO = SRTT + 4 × RTTVAR</span></p></div>
+        <div class="ask"><b>If asked: what is Karn’s algorithm?</b><p>Do not measure RTT on a resent packet, because you cannot tell which copy the acknowledgement belongs to.</p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 8</span><h3>The ML model</h3><span class="time">50 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The ML pipeline diagram.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>Instead of a fixed formula, the model looks at the last few RTTs: average, spread, maximum, trend and so on. That is 12 features. It predicts how long the slowest 5 % of the next packets will take, and uses that as the timeout. Version 1 is a random forest with 40 trees. For safety, the answer is always kept between half and twice the TCP value. If anything goes wrong, it falls back to the formula.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">12 features · 40 trees · safety band 0.5× to 2×</span></p></div>
+        <div class="ask"><b>If asked: why save the model as JSON and not pickle?</b><p>Loading a pickle file can run code, which is a security risk. JSON is only data. The trees are evaluated in plain Python.</p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 9</span><h3>Version 2</h3><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The v2 calibration chart.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>Version 1 was faster, but it resent about 2.5 times more packets than needed. So we built version 2. It uses gradient boosting with 300 trees, and it was also trained on data recorded while ML was in control. We fixed the rule before testing: waste must stay under 1.15 times TCP’s, and within that, pick the fastest setting.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">v1 waste 2.47× → v2 waste 0.71×</span></p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 10</span><h3>RACK loss detection</h3><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The RACK slide.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>A timer is not the only way to find a lost packet. RACK, from RFC 8985, says: if a packet sent later has already been acknowledged, and enough time has passed, the earlier one is probably lost. So we resend without waiting for the timer. A simple duplicate-ACK rule gave us about 3,400 false resends. RACK with an adaptive reorder window brought that down to about 6.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">~3,400 false resends → ~6</span></p></div>
+      </article>
+
+      <article class="step skip">
+        <div class="step-head"><span class="num">Slide 11</span><h3>How we tested</h3><span class="tag-skip">skip if short</span><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>Method slide and the networks table.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>Seven networks, from stable to heavy jitter to reordering. Ten seeds each. Six strategies. That is 420 transfers of a 1 MB file. Every file arrived and matched its SHA-256 hash. Each strategy is compared with TCP’s formula on the same seed, and we use the Wilcoxon signed-rank test to check the difference is not luck.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">7 × 10 × 6 = 420 transfers, 420 verified</span></p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 12</span><h3>Headline result</h3><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The dark headline-stats slide. Pause here.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>This is the main result. ML version 2 together with RACK was 4.3 % faster than TCP’s formula on average and resent 12 % fewer unnecessary packets. It is the only strategy that is better on both speed and waste.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">+4.3 % goodput · 0.88× waste</span></p></div>
+        <div class="ask"><b>If asked: what is goodput?</b><p>Useful file data delivered per second. It does not count resent copies or headers.</p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 13</span><h3>Speed vs waste</h3><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The scatter chart. Point at each group.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>Up and to the left is better. ML v1 and a shorter TCP formula are fast but wasteful. ML v2 alone is lean but a bit slow. RACK alone is fast with some extra waste. The combination sits in the best corner.</q></p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 14</span><h3>Per network</h3><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The per-network bar chart.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>ML v2 plus RACK was never slower than TCP’s formula on any lossy network. The biggest gain was on the reordering network, 10.2 %. The gains on lossy, jitter and reordering networks are statistically significant.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">never slower · up to +10.2 % · significant on 3 of 6</span></p></div>
+        <div class="ask"><b>If asked: what about the stable network?</b><p>About 2 % slower there. With no losses, the timeout never matters, and the extra Python computation costs a little time. A compiled version would remove most of it.</p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 15</span><h3>The lesson</h3><span class="time">40 s</span></div>
+        <div class="row"><span class="k">Show</span><p>Offline vs online slide.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>Our most important lesson. On recorded data, ML v1 predicted much better than the formula: 5.7 ms error against 10.0. But in real transfers it resent more packets. Being accurate on average is not the same as being a better protocol. That is why we chose version 2 using full transfers, not prediction error.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">error 5.7 ms vs 10.0 ms, yet more waste</span></p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 16</span><h3>Engineering + live demo</h3><span class="time">60 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The engineering slide, then switch to the browser for the demo below.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>The project has 136 automated tests, all passing. We also built a live lab. Let me show you a real transfer.</q></p></div>
+        <div class="row"><span class="k">Number</span><p><span class="num-big">136 tests</span></p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 17</span><h3>Conclusion</h3><span class="time">30 s</span></div>
+        <div class="row"><span class="k">Show</span><p>The dark conclusion slide.</p></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>To conclude: ML alone is a trade-off between speed and waste. RACK, a protocol idea with no ML, is the most dependable gain. Together they beat TCP’s formula on both counts. Our limits: it is a simulator on one machine, and there is no congestion control.</q></p></div>
+      </article>
+
+      <article class="step">
+        <div class="step-head"><span class="num">Slide 18</span><h3>Thank you</h3><span class="time">10 s</span></div>
+        <div class="row"><span class="k">Say</span><p class="say"><q>Thank you. We are happy to take questions.</q></p></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="demo" class="demo">
+    <h2>Live demo, step by step</h2>
+    <div class="box">
+      <ol>
+        <li>Switch to the browser tab at <code>localhost:8000</code> and scroll to <b>Live lab</b>.</li>
+        <li>Choose network <b>jitter_heavy</b>, strategy <b>RFC 6298</b>, RACK <b>off</b>. Press run. Say: <q>This is TCP’s formula on a jittery network.</q></li>
+        <li>While it runs, point at the timeouts and resends counters as they rise.</li>
+        <li>Now choose <b>ML v2</b> with RACK <b>on</b>, same network. Press run. Say: <q>Same network, same damage, our best strategy.</q></li>
+        <li>Compare the two: time taken, and the number of unnecessary resends. Then say: <q>Both files arrived and were verified with SHA-256.</q></li>
+      </ol>
+    </div>
+    <p style="color:var(--muted)">If the lab does not start, the page replays recorded runs automatically. You can still show it the same way.</p>
+    <pre>cd ~/Documents/udp_ai_transfer
+python3 lab_server.py      # then open http://localhost:8000</pre>
+  </section>
+
+  <section id="questions">
+    <h2>Likely questions</h2>
+    <div class="qa">
+      <details><summary>Why use UDP and not just TCP?</summary><p>TCP hides its timeout inside the operating system, so we cannot change it. On UDP we build reliability ourselves and can swap the timeout strategy. QUIC, used by HTTP/3, also runs on UDP for the same reason.</p></details>
+      <details><summary>Does the ML always win?</summary><p>No. ML alone either wastes more (v1) or is slower (v2). It only wins on both counts when combined with RACK. We report this honestly.</p></details>
+      <details><summary>What if the model gives a bad answer?</summary><p>The timeout is clamped between half and twice the TCP value, with a floor from recent RTTs. If the model fails or has too little data, the sender uses the TCP formula.</p></details>
+      <details><summary>Why predict the 95th percentile?</summary><p>The timeout should cover almost all packets, but not wait for the rare slowest one. The 95th percentile is that balance.</p></details>
+      <details><summary>How do you know the comparison is fair?</summary><p>The simulator decides each packet’s fate from a hash of the seed and packet number. Same seed gives same damage. Every strategy runs on the same 70 network-and-seed pairs.</p></details>
+      <details><summary>Is the result statistically significant?</summary><p>We use the Wilcoxon signed-rank test on paired seeds. ML v2 plus RACK is significantly faster on 3 of 6 lossy networks, and never slower on any.</p></details>
+      <details><summary>Would this work on the real internet?</summary><p>Not proven. It is a simulator on one machine with no congestion control. Testing on real links is future work.</p></details>
+      <details><summary>What did you find hardest?</summary><p>The backoff bug that made a transfer take 22 seconds instead of 4.3, and learning that better prediction accuracy did not mean a better protocol.</p></details>
+    </div>
+  </section>
+
+  <section>
+    <h2>Speaking tips</h2>
+    <div class="tips">
+      <div class="box"><h3>One idea per slide</h3><p>Say the main point first, then the detail. If you forget the detail, the main point is enough.</p></div>
+      <div class="box"><h3>Pause on slide 12</h3><p>That is your result. Let the numbers sit for two seconds before moving on.</p></div>
+      <div class="box"><h3>Be honest about limits</h3><p>Saying “ML alone did not win” shows you understand the work. Faculty like that.</p></div>
+      <div class="box"><h3>Unknown question?</h3><p>Say: “Good question. We did not test that, but I would expect…” and give your best reasoning.</p></div>
+    </div>
+  </section>
+
+  <footer>Numbers are from the project’s 420-transfer run (results/RESULTS.md).</footer>
+</main>
+
+<script>
+(function(){
+  var full=document.getElementById('len-full'), short=document.getElementById('len-short'), note=document.getElementById('len-note');
+  function set(isShort){
+    document.body.classList.toggle('short',isShort);
+    full.setAttribute('aria-pressed',String(!isShort));
+    short.setAttribute('aria-pressed',String(isShort));
+    note.textContent=isShort?'Short talk: skip slides 5, 7 and 11, about 7 minutes.':'Full talk: all 18 slides, about 10 minutes.';
+    try{localStorage.setItem('guide-len',isShort?'short':'full')}catch(e){}
+  }
+  full.addEventListener('click',function(){set(false)});
+  short.addEventListener('click',function(){set(true)});
+  try{ if(localStorage.getItem('guide-len')==='short') set(true); }catch(e){}
+
+  var boxes=document.querySelectorAll('#checklist input');
+  boxes.forEach(function(b){
+    try{ b.checked=localStorage.getItem('guide-'+b.id)==='1'; }catch(e){}
+    b.addEventListener('change',function(){ try{localStorage.setItem('guide-'+b.id,b.checked?'1':'0')}catch(e){} });
+  });
+})();
+</script>

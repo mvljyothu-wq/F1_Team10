@@ -1,0 +1,7 @@
+{
+  "model": "models/rto_model_v2.json",
+  "target": "direct",
+  "margin": 1.15,
+  "test_rows": 25721,
+  "test_runs": 42
+}

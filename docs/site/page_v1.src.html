@@ -1,0 +1,1267 @@
+<title>AI-Adaptive Reliable UDP Transfer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: one reading column of numbered sections in presentation order; each pairs a short
+   explanation with one exhibit (live diagram, calculator or chart) drawn from the real results.
+   Four switchable looks borrow from networking's own documents and tools. */
+:root{
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* Paper: an RFC document (default light) */
+  --f-display:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --display-stretch:100%; --display-case:none; --display-weight:600; --display-track:-0.02em;
+  --bg:#f3f5f6; --surface:#ffffff; --surface-2:#e9eef1; --ink:#13202b; --ink-2:#4b5967; --ink-3:#77838f;
+  --line:#d2dae1; --accent:#0b5cad; --accent-ink:#ffffff; --accent-soft:#dbe8f6;
+  --c-rto:#2a78d6; --c-ml:#eb6834; --c-k2:#1baf7a;
+  --good:#15804e; --bad:#c23b3b; --warn:#b07400;
+  --grid:#e2e7eb; --code-bg:#eef2f4; --eyebrow-bg:transparent; --eyebrow-ink:var(--accent);
+  --pattern:none; --radius:6px; --shadow:0 1px 2px rgba(19,32,43,.06);
+  color-scheme:light;
+}
+/* Console: a network operations centre (default dark) */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --f-display:"Archivo","Helvetica Neue",Arial,sans-serif; --display-stretch:112%; --display-weight:700; --display-track:-0.01em;
+    --bg:#0b1118; --surface:#111a24; --surface-2:#17222e; --ink:#e3eaf1; --ink-2:#9eabb8; --ink-3:#6f7d8b;
+    --line:#233140; --accent:#5aa8ff; --accent-ink:#04111f; --accent-soft:#12293f;
+    --c-rto:#4b95ee; --c-ml:#f07a43; --c-k2:#25b682;
+    --good:#45c486; --bad:#f17676; --warn:#e3b341;
+    --grid:#1b2733; --code-bg:#0d151e; --eyebrow-bg:transparent; --eyebrow-ink:var(--accent);
+    --shadow:none; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif; --display-stretch:112%; --display-weight:700; --display-track:-0.01em;
+  --bg:#0b1118; --surface:#111a24; --surface-2:#17222e; --ink:#e3eaf1; --ink-2:#9eabb8; --ink-3:#6f7d8b;
+  --line:#233140; --accent:#5aa8ff; --accent-ink:#04111f; --accent-soft:#12293f;
+  --c-rto:#4b95ee; --c-ml:#f07a43; --c-k2:#25b682;
+  --good:#45c486; --bad:#f17676; --warn:#e3b341;
+  --grid:#1b2733; --code-bg:#0d151e; --eyebrow-bg:transparent; --eyebrow-ink:var(--accent);
+  --shadow:none; color-scheme:dark;
+}
+/* Explicit looks chosen with the switcher (declared after, so they win) */
+:root[data-look="paper"]{
+  --f-display:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace; --display-stretch:100%; --display-case:none; --display-weight:600; --display-track:-0.02em;
+  --bg:#f3f5f6; --surface:#ffffff; --surface-2:#e9eef1; --ink:#13202b; --ink-2:#4b5967; --ink-3:#77838f;
+  --line:#d2dae1; --accent:#0b5cad; --accent-ink:#ffffff; --accent-soft:#dbe8f6;
+  --c-rto:#2a78d6; --c-ml:#eb6834; --c-k2:#1baf7a; --good:#15804e; --bad:#c23b3b; --warn:#b07400;
+  --grid:#e2e7eb; --code-bg:#eef2f4; --eyebrow-bg:transparent; --eyebrow-ink:var(--accent);
+  --pattern:none; --shadow:0 1px 2px rgba(19,32,43,.06); color-scheme:light;
+}
+:root[data-look="console"]{
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif; --display-stretch:112%; --display-case:none; --display-weight:700; --display-track:-0.01em;
+  --bg:#0b1118; --surface:#111a24; --surface-2:#17222e; --ink:#e3eaf1; --ink-2:#9eabb8; --ink-3:#6f7d8b;
+  --line:#233140; --accent:#5aa8ff; --accent-ink:#04111f; --accent-soft:#12293f;
+  --c-rto:#4b95ee; --c-ml:#f07a43; --c-k2:#25b682; --good:#45c486; --bad:#f17676; --warn:#e3b341;
+  --grid:#1b2733; --code-bg:#0d151e; --eyebrow-bg:transparent; --eyebrow-ink:var(--accent);
+  --pattern:none; --shadow:none; color-scheme:dark;
+}
+:root[data-look="blueprint"]{
+  --f-display:"Archivo","Arial Narrow",Arial,sans-serif; --display-stretch:72%; --display-case:uppercase; --display-weight:700; --display-track:0.01em;
+  --bg:#0b3a66; --surface:#0f4677; --surface-2:#134f88; --ink:#eef6ff; --ink-2:#bcd5ee; --ink-3:#8fb1d4;
+  --line:#3e70a3; --accent:#ffd36b; --accent-ink:#2a1d00; --accent-soft:#1a5a96;
+  --c-rto:#8fcaff; --c-ml:#ffac69; --c-k2:#7ae4bf; --good:#8ee6b0; --bad:#ffa3a3; --warn:#ffd36b;
+  --grid:#255c92; --code-bg:#093256; --eyebrow-bg:transparent; --eyebrow-ink:var(--accent);
+  --pattern:linear-gradient(rgba(190,220,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(190,220,255,.07) 1px,transparent 1px);
+  --shadow:none; color-scheme:dark;
+}
+:root[data-look="capture"]{
+  --f-display:"IBM Plex Sans",system-ui,sans-serif; --display-stretch:100%; --display-case:none; --display-weight:700; --display-track:-0.015em;
+  --bg:#f6f5fb; --surface:#ffffff; --surface-2:#eeebf8; --ink:#1c1730; --ink-2:#534d69; --ink-3:#827c97;
+  --line:#dcd7ea; --accent:#5a3cc2; --accent-ink:#ffffff; --accent-soft:#e8e2fb;
+  --c-rto:#2a78d6; --c-ml:#eb6834; --c-k2:#1baf7a; --good:#15804e; --bad:#c23b3b; --warn:#a86b00;
+  --grid:#ebe8f3; --code-bg:#f1eef9; --eyebrow-bg:#dfeeff; --eyebrow-ink:#163b66;
+  --pattern:none; --shadow:0 1px 2px rgba(28,23,48,.06); color-scheme:light;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);background-image:var(--pattern);background-size:28px 28px;color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-stretch:var(--display-stretch);text-transform:var(--display-case);font-weight:var(--display-weight);letter-spacing:var(--display-track);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(2rem,4.6vw,3.35rem);line-height:1.06}
+h2{font-size:clamp(1.55rem,3vw,2.15rem)}
+h3{font-size:1.12rem;letter-spacing:0}
+p{margin:0}
+.mono{font-family:var(--f-mono)}
+.num{font-variant-numeric:tabular-nums}
+code,kbd{font-family:var(--f-mono);font-size:.88em;background:var(--code-bg);border:1px solid var(--line);border-radius:4px;padding:.05em .35em}
+
+/* top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;gap:16px;min-height:56px}
+.brand{font-family:var(--f-mono);font-weight:600;font-size:.88rem;white-space:nowrap;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:8px}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--c-ml);box-shadow:-13px 0 0 var(--c-rto)}
+.brand .dot{margin-left:13px}
+.nav{display:flex;gap:2px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{font-size:.8rem;color:var(--ink-2);text-decoration:none;padding:6px 9px;border-radius:5px;white-space:nowrap}
+.nav a:hover{color:var(--ink);background:var(--surface-2)}
+.nav a.on{color:var(--accent);background:var(--accent-soft)}
+.looks{display:flex;align-items:center;gap:8px;flex:none}
+.looks-label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.looks-group{display:flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2)}
+.look-btn{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);cursor:pointer;padding:0;position:relative;overflow:hidden;background:var(--surface)}
+.look-btn[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.look-btn span{position:absolute;inset:0}
+.look-btn .sw-auto{background:linear-gradient(135deg,#f3f5f6 50%,#0b1118 50%)}
+.look-btn .sw-paper{background:#ffffff;border-radius:50%;box-shadow:inset 0 -9px 0 #0b5cad}
+.look-btn .sw-console{background:#0b1118;box-shadow:inset 0 -9px 0 #5aa8ff}
+.look-btn .sw-blueprint{background:#0b3a66;box-shadow:inset 0 -9px 0 #ffd36b}
+.look-btn .sw-capture{background:#f6f5fb;box-shadow:inset 0 -9px 0 #5a3cc2}
+@media (max-width:860px){.looks-label{display:none}.nav{display:none}}
+
+/* sections */
+section{padding-block:72px;border-bottom:1px solid var(--line)}
+.sec-head{display:grid;gap:12px;max-width:760px;margin-bottom:32px}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--eyebrow-ink);background:var(--eyebrow-bg);padding:2px 0;width:fit-content}
+:root[data-look="capture"] .eyebrow{padding:3px 10px;border-radius:3px}
+.eyebrow b{font-weight:600}
+.lede{font-size:1.08rem;color:var(--ink-2);max-width:68ch}
+.prose{display:grid;gap:14px;max-width:68ch;color:var(--ink-2)}
+.prose strong{color:var(--ink)}
+
+.grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+.grid-2 > *{min-width:0}
+@media (max-width:860px){.grid-2{grid-template-columns:1fr}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-width:0}
+.panel-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.panel-title h3{font-family:var(--f-body);font-weight:600;font-size:1rem;letter-spacing:0;text-transform:none;font-stretch:100%}
+.hint{font-size:.82rem;color:var(--ink-3)}
+.caption{font-size:.84rem;color:var(--ink-3);margin-top:10px}
+
+.btn{font:inherit;font-size:.86rem;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px}
+.seg button{font:inherit;font-size:.82rem;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);padding:6px 11px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* hero */
+.hero{padding-block:56px 40px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:end}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr}}
+.hero h1 .accent{color:var(--accent)}
+.hero .lede{margin-top:18px}
+.byline{margin-top:20px;font-size:.88rem;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 18px}
+.byline b{color:var(--ink);font-weight:600}
+.answer{border-left:3px solid var(--c-ml);padding:14px 18px;background:var(--surface);border-radius:0 var(--radius) var(--radius) 0;box-shadow:var(--shadow)}
+.answer .k{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--c-ml);margin-bottom:6px}
+.answer p{color:var(--ink);font-size:.98rem}
+.wire{margin-top:32px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.wire canvas{display:block;width:100%;height:210px}
+.wire-legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:10px 14px;border-top:1px solid var(--line);font-size:.8rem;color:var(--ink-2)}
+.key{display:inline-flex;align-items:center;gap:6px}
+.key i{width:12px;height:8px;border-radius:2px;display:inline-block}
+.stats{margin-top:28px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.stat{background:var(--surface);padding:16px 18px;display:grid;gap:2px}
+.stat .v{font-family:var(--f-mono);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
+.stat .l{font-size:.82rem;color:var(--ink-2)}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* RTT explorer */
+.slider-row{display:flex;align-items:center;gap:12px;margin-top:10px}
+.slider-row input{flex:1;accent-color:var(--accent)}
+.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.readout{border:1px solid var(--line);border-radius:5px;padding:10px 12px;background:var(--surface-2)}
+.readout .v{font-family:var(--f-mono);font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums}
+.readout .l{font-size:.76rem;color:var(--ink-2);line-height:1.35}
+@media (max-width:520px){.readouts{grid-template-columns:1fr}}
+svg text{font-family:var(--f-body)}
+.ax{stroke:var(--line)} .gridl{stroke:var(--grid)}
+.t-ink{fill:var(--ink)} .t-2{fill:var(--ink-2)} .t-3{fill:var(--ink-3)}
+.f-rto{fill:var(--c-rto)} .f-ml{fill:var(--c-ml)} .f-k2{fill:var(--c-k2)} .f-acc{fill:var(--accent)} .f-bad{fill:var(--bad)} .f-good{fill:var(--good)} .f-muted{fill:var(--ink-3)} .f-surface{fill:var(--surface)} .f-s2{fill:var(--surface-2)} .f-line{fill:var(--line)}
+.k-rto{stroke:var(--c-rto)} .k-ml{stroke:var(--c-ml)} .k-k2{stroke:var(--c-k2)} .k-acc{stroke:var(--accent)} .k-bad{stroke:var(--bad)} .k-ink{stroke:var(--ink)} .k-2{stroke:var(--ink-2)} .k-3{stroke:var(--ink-3)} .k-line{stroke:var(--line)} .k-surface{stroke:var(--surface)}
+
+/* architecture */
+.arch{display:grid;grid-template-columns:minmax(0,1.25fr) 64px minmax(0,1fr) 64px minmax(0,1fr);align-items:stretch}
+.node{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px;display:grid;gap:10px;align-content:start;box-shadow:var(--shadow)}
+.node h3{font-family:var(--f-mono);font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--ink-2);font-stretch:100%}
+.node .proc{font-size:.8rem;color:var(--ink-3);font-family:var(--f-mono)}
+.mod{border:1px solid var(--line);border-radius:5px;padding:9px 11px;background:var(--surface-2)}
+.mod b{display:block;font-size:.9rem;font-weight:600}
+.mod span{font-size:.8rem;color:var(--ink-2);display:block;line-height:1.4}
+.mod code{font-size:.75rem}
+.mod.hl{border-color:var(--c-ml);background:var(--surface)}
+.mod-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.link{display:flex;flex-direction:column;justify-content:center;gap:18px;font-family:var(--f-mono);font-size:.68rem;color:var(--ink-3);text-align:center}
+.link .ar{position:relative;height:2px;background:var(--ink-3);margin:0 6px}
+.link .ar::after{content:"";position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left:7px solid var(--ink-3);border-right:0}
+.link .ar.back::after{left:-1px;right:auto;border-left:0;border-right:7px solid var(--ink-3)}
+.link .ar.data{background:var(--accent)} .link .ar.data::after{border-left-color:var(--accent)}
+.link .ar.ack{background:var(--c-k2)} .link .ar.ack::after{border-right-color:var(--c-k2)}
+@media (max-width:900px){
+  .arch{grid-template-columns:1fr}
+  .link{flex-direction:row;justify-content:center;padding:10px 0;gap:24px}
+  .link .ar{width:2px;height:30px;margin:0}
+  .link .ar::after{right:auto;left:-4px;top:auto;bottom:-1px;border:5px solid transparent;border-top:7px solid var(--accent);border-bottom:0}
+  .link .ar.back::after{top:-1px;bottom:auto;border-top:0;border-bottom:7px solid var(--c-k2)}
+}
+
+/* packet header */
+.hdr-wrap{overflow-x:auto}
+.hdr{min-width:620px;font-family:var(--f-mono);font-size:.78rem}
+.hdr-bits{display:grid;grid-template-columns:repeat(32,1fr);color:var(--ink-3);font-size:.66rem;text-align:center;margin-bottom:2px}
+.hdr-row{display:grid;grid-template-columns:repeat(32,1fr);border-left:1px solid var(--ink-3)}
+.fld{border:1px solid var(--ink-3);border-left:0;margin-top:-1px;padding:10px 4px;text-align:center;background:var(--surface);cursor:pointer;color:var(--ink);font:inherit;line-height:1.25}
+.fld small{display:block;color:var(--ink-3);font-size:.68rem}
+.fld:hover,.fld.sel{background:var(--accent-soft)}
+.fld.sel{box-shadow:inset 0 0 0 2px var(--accent)}
+.fld.pay{background:var(--surface-2);border-style:dashed}
+.hexdump{font-family:var(--f-mono);font-size:.82rem;display:flex;flex-wrap:wrap;gap:3px;margin-top:14px}
+.hexdump span{padding:2px 3px;border-radius:3px;color:var(--ink-2)}
+.hexdump span.sel{background:var(--accent);color:var(--accent-ink)}
+.field-info{margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:5px;background:var(--surface-2);display:grid;gap:4px;min-height:118px}
+.field-info .fn{font-family:var(--f-mono);font-weight:600}
+.field-info .fv{font-family:var(--f-mono);font-size:.86rem;color:var(--accent)}
+.field-info p{font-size:.9rem;color:var(--ink-2)}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--f-mono)}
+.tbl{overflow-x:auto}
+
+/* selective repeat */
+.sr{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;align-items:start}
+@media (max-width:900px){.sr{grid-template-columns:1fr}}
+.sr-svg{width:100%;height:auto;display:block}
+.sr-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.sr-state{display:grid;gap:14px}
+.wstrip{display:grid;gap:6px}
+.wstrip .lbl{font-size:.78rem;color:var(--ink-2);display:flex;justify-content:space-between}
+.cells{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;position:relative}
+.cell{border:1px solid var(--line);border-radius:4px;text-align:center;font-family:var(--f-mono);font-size:.82rem;padding:7px 0;background:var(--surface);color:var(--ink-3);transition:background .2s,color .2s}
+.cell.flight{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.cell.acked{background:var(--c-k2);color:#fff;border-color:var(--c-k2)}
+.cell.buf{background:var(--surface-2);color:var(--warn);border-color:var(--warn);border-style:dashed}
+.cell.done{background:var(--c-k2);color:#fff;border-color:var(--c-k2)}
+.cell.inwin{box-shadow:inset 0 -3px 0 var(--accent)}
+.log{position:relative;list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:330px;overflow-y:auto;border:1px solid var(--line);border-radius:5px;padding:6px}
+.log li button{all:unset;display:block;cursor:pointer;font-size:.86rem;line-height:1.4;padding:7px 9px;border-radius:4px;color:var(--ink-3)}
+.log li button .tm{font-family:var(--f-mono);font-size:.72rem;margin-right:6px}
+.log li.past button{color:var(--ink-2)}
+.log li.now button{background:var(--accent-soft);color:var(--ink)}
+.log li button:focus-visible{outline:2px solid var(--accent)}
+.legend-row{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--ink-2)}
+
+/* RTO */
+.eq{font-family:var(--f-mono);font-size:.9rem;background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:16px 18px;line-height:1.9;overflow-x:auto;white-space:pre;color:var(--ink)}
+.eq .c{color:var(--ink-3)}
+.eq .h{color:var(--accent);font-weight:600}
+.calc-in{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.calc-in input{flex:1;min-width:0;font:inherit;font-family:var(--f-mono);font-size:.88rem;padding:8px 10px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink)}
+.cards-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}
+@media (max-width:860px){.cards-3{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:var(--radius);padding:18px;background:var(--surface);display:grid;gap:8px;align-content:start;box-shadow:var(--shadow)}
+.card .tag{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.card p{font-size:.92rem;color:var(--ink-2)}
+.card.bug{border-top:3px solid var(--bad)}
+
+/* ML */
+.pipeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;counter-reset:st}
+@media (max-width:900px){.pipeline{grid-template-columns:1fr}}
+.step{border:1px solid var(--line);border-radius:var(--radius);padding:14px;background:var(--surface);display:grid;gap:6px;align-content:start;position:relative}
+.step::before{counter-increment:st;content:counter(st);font-family:var(--f-mono);font-size:.74rem;color:var(--accent-ink);background:var(--accent);width:22px;height:22px;border-radius:50%;display:grid;place-items:center}
+.step b{font-size:.92rem}
+.step span{font-size:.82rem;color:var(--ink-2);line-height:1.45}
+.step .where{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-3)}
+.band-demo{margin-top:6px}
+
+/* results */
+.findings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:32px}
+@media (max-width:860px){.findings{grid-template-columns:1fr}}
+.finding{border:1px solid var(--line);border-radius:var(--radius);padding:18px;background:var(--surface);display:grid;gap:8px;align-content:start;box-shadow:var(--shadow);border-top:3px solid var(--line)}
+.finding.pos{border-top-color:var(--good)} .finding.mix{border-top-color:var(--warn)} .finding.neg{border-top-color:var(--bad)}
+.finding .big{font-family:var(--f-mono);font-size:1.6rem;font-weight:600;font-variant-numeric:tabular-nums}
+.finding p{font-size:.9rem;color:var(--ink-2)}
+.prof-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
+.prof-desc{font-size:.88rem;color:var(--ink-2);margin-bottom:16px}
+.metric-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.metric-cards{grid-template-columns:1fr}}
+.mc{border:1px solid var(--line);border-radius:var(--radius);padding:16px;background:var(--surface);display:grid;gap:10px;min-width:0}
+.mc-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.mc-h b{font-size:.92rem}
+.mc-h .dir{font-size:.74rem;color:var(--ink-3)}
+.bars{display:grid;gap:7px}
+.bar{display:grid;grid-template-columns:112px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:.8rem}
+.bar .nm{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .track{height:14px;background:var(--surface-2);border-radius:3px;position:relative;overflow:hidden}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.bar .val{font-family:var(--f-mono);text-align:right;white-space:nowrap;min-width:52px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.verdict{font-size:.8rem;display:flex;gap:6px;align-items:center;flex-wrap:wrap;color:var(--ink-2)}
+.pill{font-family:var(--f-mono);font-size:.74rem;padding:1px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)} .pill.bad{color:var(--bad)} .pill.flat{color:var(--ink-3)}
+.heat td,.heat th{text-align:center;padding:9px 8px;border:1px solid var(--line)}
+.heat th:first-child,.heat td:first-child{text-align:left;font-family:var(--f-mono);font-size:.8rem}
+.heat td.cellv{font-family:var(--f-mono);font-size:.82rem;font-variant-numeric:tabular-nums;color:var(--ink)}
+.small-mult{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:860px){.small-mult{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.small-mult{grid-template-columns:1fr}}
+.sm{border:1px solid var(--line);border-radius:5px;background:var(--surface);padding:8px;cursor:pointer;font:inherit;color:inherit;text-align:left}
+.sm.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.sm svg{width:100%;height:auto;display:block}
+
+/* engineering / conclusion */
+.checklist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.checklist li{position:relative;padding-left:22px;font-size:.92rem;color:var(--ink-2)}
+.checklist li::before{content:"";position:absolute;left:0;top:.5em;width:11px;height:11px;border-radius:2px;background:var(--c-k2)}
+.checklist li b{color:var(--ink)}
+.cmds{display:grid;gap:8px}
+.cmds > div{min-width:0}
+.cmd{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:5px;background:var(--code-bg);padding:6px 6px 6px 12px;min-width:0}
+.cmd code{border:0;background:none;padding:0;flex:1;min-width:0;overflow-x:auto;white-space:nowrap;font-size:.84rem}
+.cmd .btn{padding:4px 9px;font-size:.76rem;flex:none}
+.verdict-box{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:var(--radius);background:var(--surface);padding:20px 22px;display:grid;gap:10px}
+.verdict-box p{color:var(--ink-2)}
+footer{padding-block:36px 56px;font-size:.84rem;color:var(--ink-3)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Back to top"><span class="dot" aria-hidden="true"></span>udp-rto</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#problem">Problem</a><a href="#architecture">Architecture</a><a href="#packet">Packet</a>
+      <a href="#protocol">Selective Repeat</a><a href="#rto">RTO</a><a href="#ml">ML model</a>
+      <a href="#method">Fair testing</a><a href="#results">Results</a><a href="#lessons">Lessons</a>
+      <a href="#engineering">Engineering</a><a href="#conclusion">Conclusion</a>
+    </nav>
+    <div class="looks">
+      <span class="looks-label" id="look-name">Look: Auto</span>
+      <div class="looks-group" role="group" aria-label="Choose a visual theme">
+        <button class="look-btn" data-look="auto" title="Auto: follows your light/dark setting" aria-label="Auto theme" aria-pressed="true"><span class="sw-auto"></span></button>
+        <button class="look-btn" data-look="paper" title="Paper: styled like an RFC document" aria-label="Paper theme (RFC document)" aria-pressed="false"><span class="sw-paper"></span></button>
+        <button class="look-btn" data-look="console" title="Console: network operations centre" aria-label="Console theme (network operations centre)" aria-pressed="false"><span class="sw-console"></span></button>
+        <button class="look-btn" data-look="blueprint" title="Blueprint: network topology drawing" aria-label="Blueprint theme (topology drawing)" aria-pressed="false"><span class="sw-blueprint"></span></button>
+        <button class="look-btn" data-look="capture" title="Capture: packet analyser" aria-label="Capture theme (packet analyser)" aria-pressed="false"><span class="sw-capture"></span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow"><b>Computer Networks</b> · course project</span>
+        <h1 style="margin-top:14px">AI-Adaptive Reliable File Transfer <span class="accent">over UDP</span></h1>
+        <p class="lede">A reliable transport protocol built from scratch on plain UDP sockets, used to answer one question: can a machine-learning model choose the retransmission timeout better than TCP's own formula, RFC 6298?</p>
+        <div class="byline"><span><b>Madhavarapu Venkata Lakshmi Jyothiradithya</b></span><span class="mono">24BCI0184</span><span>B.Tech CSE (Information Security)</span></div>
+      </div>
+      <div class="answer">
+        <div class="k">Short answer</div>
+        <p>On lossy and jittery networks the ML timeout delivered <b>6–11 % more throughput</b>, at the cost of about <b>twice as many unnecessary resends</b>. On a rapidly changing network it did worse. It is a useful refinement in specific conditions, not a general improvement.</p>
+      </div>
+    </div>
+    <div class="wire" aria-label="Animation of packets travelling from sender through the simulated network to the receiver">
+      <canvas id="wire" role="img" aria-label="Packets flow from sender to receiver through the impairment proxy. Some are lost and resent; acknowledgements flow back."></canvas>
+      <div class="wire-legend">
+        <span class="key"><i style="background:var(--accent)"></i>DATA packet</span>
+        <span class="key"><i style="background:var(--c-k2)"></i>ACK</span>
+        <span class="key"><i style="background:var(--bad)"></i>lost in the network</span>
+        <span class="key"><i style="background:var(--c-ml)"></i>resent after timeout</span>
+        <span style="margin-left:auto" class="hint">Illustration of the protocol in motion</span>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="v num">210/210</span><span class="l">test transfers SHA-256 verified</span></div>
+      <div class="stat"><span class="v num">120</span><span class="l">automated tests passing</span></div>
+      <div class="stat"><span class="v num">7</span><span class="l">simulated network conditions</span></div>
+      <div class="stat"><span class="v num">+6–11 %</span><span class="l">goodput where ML helped (p = 0.002)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 1 PROBLEM -->
+<section id="problem">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§1</b> The problem</span>
+      <h2>UDP delivers nothing reliably. The hard part is knowing when to give up waiting.</h2>
+      <p class="lede">UDP gives no guarantee that a datagram arrives, arrives once, or arrives in order. To make it reliable we number every chunk, acknowledge it, and resend it if the acknowledgement does not come back within the retransmission timeout (RTO).</p>
+    </div>
+    <div class="grid-2">
+      <div class="prose">
+        <p><strong>Wait too little</strong> and the sender resends packets that were only late. That wastes bandwidth and adds load exactly when the network is struggling.</p>
+        <p><strong>Wait too long</strong> and, after a real loss, the sender sits idle. With a sliding window, one missing packet can stall all new data behind it.</p>
+        <p>TCP solves this with a formula from 1988 (Jacobson/Karels, standardised as RFC 6298): a smoothed RTT plus four times its variation. This project asks whether a model that has seen thousands of real RTT sequences can set a tighter, smarter timeout.</p>
+        <p>Drag the slider to choose a timeout. The histogram shows <strong>776 real round-trip times</strong> measured by our sender on the heavy-jitter network.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><h3>Choose a timeout</h3><span class="hint">jitter_heavy · seed 1000 · real samples</span></div>
+        <svg id="rtt-hist" viewBox="0 0 560 230" role="img" aria-label="Histogram of measured round-trip times with the chosen timeout marked"></svg>
+        <div class="slider-row">
+          <label for="rto-slider" class="hint" style="white-space:nowrap">Timeout</label>
+          <input type="range" id="rto-slider" min="60" max="130" step="1" value="80">
+          <span class="mono num" id="rto-val" style="min-width:64px;text-align:right">80 ms</span>
+        </div>
+        <div class="readouts">
+          <div class="readout"><div class="v" id="ro-early">–</div><div class="l">of delivered packets would time out early (wasted resends)</div></div>
+          <div class="readout"><div class="v" id="ro-idle">–</div><div class="l">extra idle wait after a real loss, beyond the median RTT</div></div>
+          <div class="readout"><div class="v" id="ro-p95">–</div><div class="l">95th percentile RTT: what the ML model aims for</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 ARCHITECTURE -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§2</b> Architecture</span>
+      <h2>Three processes, one network in between</h2>
+      <p class="lede">Sender and receiver are ordinary UDP programs. A proxy process sits between them and plays the role of a bad network, so the same code can later run over a real link unchanged.</p>
+    </div>
+    <div class="arch">
+      <div class="node">
+        <h3>Sender</h3><span class="proc">sender.py</span>
+        <div class="mod"><b>Chunker</b><span>Reads the file in 1,200-byte chunks and computes its SHA-256.</span></div>
+        <div class="mod"><b>Selective Repeat engine</b><span>Up to 64 packets in flight, one timer each, resends only what is missing. <code>protocol/reliability.py</code></span></div>
+        <div class="mod hl"><b>Timeout manager</b><span>Chooses how long to wait. Karn's rule, exponential backoff, safety bounds. <code>timeout/manager.py</code></span></div>
+        <div class="mod-row">
+          <div class="mod"><b>RFC 6298</b><span>SRTT + 4·RTTVAR</span></div>
+          <div class="mod"><b>ML model</b><span>Random forest, 40 trees, JSON</span></div>
+        </div>
+      </div>
+      <div class="link" aria-hidden="true"><div>SYN · DATA · FIN<div class="ar data"></div></div><div><div class="ar ack back"></div>SYN_ACK · ACK · FIN_ACK</div></div>
+      <div class="node">
+        <h3>Impairment proxy</h3><span class="proc">proxy.py</span>
+        <div class="mod"><b>Delay and jitter</b><span>Fixed, ramping, uniform or heavy-tailed.</span></div>
+        <div class="mod"><b>Loss</b><span>Random, or in bursts. Separate rates for data and ACKs.</span></div>
+        <div class="mod"><b>Duplicate, reorder, corrupt</b><span>Flips a byte so the CRC must catch it.</span></div>
+        <div class="mod"><b>Ground truth</b><span>Counts unnecessary resends and loss-recovery time, which the sender cannot see.</span></div>
+      </div>
+      <div class="link" aria-hidden="true"><div>forward<div class="ar data"></div></div><div><div class="ar ack back"></div>return</div></div>
+      <div class="node">
+        <h3>Receiver</h3><span class="proc">receiver.py</span>
+        <div class="mod"><b>Validation</b><span>Length, magic, version, CRC-32, optional HMAC, safe filename.</span></div>
+        <div class="mod"><b>Reorder buffer</b><span>Holds out-of-order chunks, at most one window.</span></div>
+        <div class="mod"><b>Commit</b><span>Writes a <code>.part</code> file, checks SHA-256, then renames it atomically.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 PACKET -->
+<section id="packet">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§3</b> Wire format</span>
+      <h2>A 24-byte header, drawn the way RFCs draw them</h2>
+      <p class="lede">All fields are big-endian (network byte order). Click any field to see what it does and its value in a real DATA packet produced by our encoder.</p>
+    </div>
+    <div class="grid-2" style="grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr)">
+      <div class="panel">
+        <div class="hdr-wrap">
+          <div class="hdr" id="hdr">
+            <div class="hdr-bits" id="hdr-bits"></div>
+          </div>
+        </div>
+        <div class="hexdump" id="hexdump" aria-label="Hex dump of the encoded packet"></div>
+        <p class="caption">Encoded <code>DATA</code> packet: transfer 0x3A7F12C9, chunk 117, payload <code>"Hello"</code>. 29 bytes on the wire.</p>
+      </div>
+      <div>
+        <div class="field-info" id="field-info" aria-live="polite"></div>
+        <div class="panel" style="margin-top:16px">
+          <h3 style="font-family:var(--f-body);font-size:1rem;text-transform:none;font-stretch:100%;margin-bottom:8px">Why 1,200-byte payloads?</h3>
+          <p class="hint" style="font-size:.88rem;color:var(--ink-2)">24 header + 1,200 data + 16 optional HMAC + 8 UDP + 20 IPv4 = <b class="mono">1,268</b> bytes. That is below 1,280, the smallest MTU any IPv6 link may have, so no datagram is ever split by IP. Losing one IP fragment would lose the whole datagram.</p>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:24px">
+      <div class="panel-title"><h3>Three different integrity checks</h3><span class="hint">none of them proves who sent the data; the optional HMAC does</span></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Check</th><th>Done by</th><th>Covers</th><th>Catches</th><th>Limitation</th></tr></thead>
+        <tbody>
+          <tr><td><b>UDP checksum</b></td><td>OS kernel</td><td>UDP header + data</td><td>bit errors on the wire</td><td>16-bit, optional on IPv4, blind to errors above UDP</td></tr>
+          <tr><td><b>CRC-32</b></td><td>our code, per packet</td><td>header + payload</td><td>every single-bit flip (tested exhaustively)</td><td>anyone can recompute it after tampering</td></tr>
+          <tr><td><b>SHA-256</b></td><td>our code, whole file</td><td>the complete file</td><td>any difference in the reassembled file</td><td>integrity only, not authentication</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 SELECTIVE REPEAT -->
+<section id="protocol">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§4</b> Transport logic</span>
+      <h2>Selective Repeat, step by step</h2>
+      <p class="lede">A sequence diagram of one small transfer: 8 chunks, window of 4. It shows a lost data packet, out-of-order buffering, a timeout with retransmission, Karn's rule, and a lost ACK covered by a cumulative ACK.</p>
+    </div>
+    <div class="sr">
+      <div class="panel">
+        <div class="sr-controls">
+          <button class="btn primary" id="sr-play">Play</button>
+          <button class="btn" id="sr-prev" aria-label="Previous step">◀ Step</button>
+          <button class="btn" id="sr-next" aria-label="Next step">Step ▶</button>
+          <button class="btn" id="sr-reset">Restart</button>
+        </div>
+        <svg id="sr-svg" class="sr-svg" viewBox="0 0 640 620" role="img" aria-label="Sequence diagram of the Selective Repeat example"></svg>
+        <div class="legend-row" style="margin-top:8px">
+          <span class="key"><i style="background:var(--accent)"></i>DATA</span>
+          <span class="key"><i style="background:var(--c-ml)"></i>resent DATA</span>
+          <span class="key"><i style="background:var(--c-k2)"></i>ACK</span>
+          <span class="key"><i style="background:var(--bad)"></i>lost</span>
+          <span class="key"><i style="background:var(--ink-3)"></i>FIN / FIN_ACK</span>
+        </div>
+      </div>
+      <div class="sr-state">
+        <div class="panel">
+          <div class="wstrip">
+            <div class="lbl"><span>Sender: chunk status</span><span class="mono" id="sr-base">base 0 · window 0–3</span></div>
+            <div class="cells" id="sr-send"></div>
+          </div>
+          <div class="wstrip" style="margin-top:14px">
+            <div class="lbl"><span>Receiver: chunk status</span><span class="mono" id="sr-exp">next expected 0</span></div>
+            <div class="cells" id="sr-recv"></div>
+          </div>
+          <div class="legend-row" style="margin-top:12px">
+            <span class="key"><i style="background:var(--accent-soft);border:1px solid var(--accent)"></i>in flight</span>
+            <span class="key"><i style="background:var(--c-k2)"></i>acknowledged / written</span>
+            <span class="key"><i style="border:1px dashed var(--warn)"></i>buffered out of order</span>
+            <span class="key"><i style="box-shadow:inset 0 -3px 0 var(--accent);border:1px solid var(--line)"></i>inside send window</span>
+          </div>
+        </div>
+        <ol class="log" id="sr-log" aria-label="Events"></ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 RTO -->
+<section id="rto">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§5</b> Baseline estimator</span>
+      <h2>RFC 6298: how TCP decides how long to wait</h2>
+      <p class="lede">Every valid round-trip sample updates a smoothed average and a smoothed deviation. The timeout sits four deviations above the average.</p>
+    </div>
+    <div class="grid-2">
+      <div style="display:grid;gap:16px;min-width:0">
+<div class="eq"><span class="c"># first sample R</span>
+SRTT   = R          RTTVAR = R / 2
+<span class="c"># every later sample R  (RTTVAR uses the OLD SRTT)</span>
+RTTVAR = 3/4 · RTTVAR + 1/4 · |SRTT − R|
+SRTT   = 7/8 · SRTT   + 1/8 · R
+<span class="h">RTO    = SRTT + max(G, 4 · RTTVAR)</span>
+<span class="c"># clamped to [30 ms, 10 s]; 1 s before any sample</span></div>
+        <p class="hint" style="font-size:.88rem">The RFC's 1-second minimum is lowered to 30 ms here. On our 20–300 ms simulated paths a 1 s floor would make every estimator output 1 s and hide every difference.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><h3>Try it: RTT samples in ms</h3><span class="hint">edit and press Enter</span></div>
+        <form class="calc-in" id="calc-form">
+          <label for="calc-input" class="hint" style="position:absolute;left:-9999px">RTT samples</label>
+          <input id="calc-input" value="100, 104, 98, 102, 250, 101, 99, 103, 100, 98, 101, 99">
+          <button class="btn primary" type="submit">Compute</button>
+        </form>
+        <svg id="calc-chart" viewBox="0 0 520 170" role="img" aria-label="RTT samples and the resulting timeout"></svg>
+        <div class="tbl" style="max-height:220px;overflow-y:auto;margin-top:8px"><table id="calc-table"><thead><tr><th class="n">#</th><th class="n">RTT</th><th class="n">RTTVAR</th><th class="n">SRTT</th><th class="n">RTO</th></tr></thead><tbody></tbody></table></div>
+        <p class="caption" id="calc-note"></p>
+      </div>
+    </div>
+    <div class="cards-3">
+      <div class="card"><span class="tag">Karn's algorithm</span><h3 style="font-family:var(--f-body);text-transform:none;font-stretch:100%">Never time a resent packet</h3><p>If a packet was sent twice, its ACK could belong to either copy, so the RTT is ambiguous. Our window only produces a sample when <code>retx == 0</code>.</p></div>
+      <div class="card"><span class="tag">Exponential backoff</span><h3 style="font-family:var(--f-body);text-transform:none;font-stretch:100%">Double once per round</h3><p>With 64 timers, one outage fires dozens at once. A backoff "epoch" makes the timeout double once per round of timeouts, not once per packet. A valid sample resets it.</p></div>
+      <div class="card bug"><span class="tag">Bug found in testing</span><h3 style="font-family:var(--f-body);text-transform:none;font-stretch:100%">Runaway timeouts</h3><p>The first version let old packets push the backoff up again after it had reset. On the lossy network a 50 ms path got a 1.9 s timeout and a 3 MB transfer took 22 s. With epochs it takes 4.3 s.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 ML -->
+<section id="ml">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§6</b> ML estimator</span>
+      <h2>Predict the 95th percentile of the next half-second of RTTs</h2>
+      <p class="lede">A timeout is a threshold, so the model does not predict the average RTT. It predicts a value that about 95 % of upcoming packets will beat, which sets an explicit budget for early timeouts.</p>
+    </div>
+    <div class="pipeline">
+      <div class="step"><b>Generate traces</b><span>224 real 1 MiB transfers: 7 networks × 32 seeds, using the RFC estimator.</span><span class="where">training/generate_dataset.py</span></div>
+      <div class="step"><b>Log features</b><span>At every RTT sample: 12 numbers from the last 16 RTTs and 64 sends. Past only.</span><span class="where">timeout/features.py</span></div>
+      <div class="step"><b>Build the label</b><span>P95 of RTTs of packets sent in the following 0.5 s. The future is used only as the label.</span><span class="where">training/dataset.py</span></div>
+      <div class="step"><b>Train and pick</b><span>Random forest, 40 trees. 4 variants compared on separate validation runs.</span><span class="where">training/train_model.py</span></div>
+      <div class="step"><b>Bound and fall back</b><span>Clamp to [0.5×, 2×] the RFC value and never below a recent RTT. No model, too little history or a bad prediction falls back to RFC 6298.</span><span class="where">timeout/ml_estimator.py</span></div>
+    </div>
+    <div class="grid-2" style="margin-top:28px">
+      <div class="panel">
+        <div class="panel-title"><h3>What the model relies on</h3><span class="hint">impurity-based feature importance</span></div>
+        <svg id="imp-chart" viewBox="0 0 520 330" role="img" aria-label="Feature importance bar chart"></svg>
+        <p class="caption">The RTT level (<code>log_srtt</code>) and the fastest recent RTT (<code>min_rel</code>) dominate. The RTT trend (<code>slope</code>) is almost unused, which explains the failure on the changing network in §8.</p>
+      </div>
+      <div style="display:grid;gap:16px;min-width:0">
+        <div class="panel">
+          <div class="panel-title"><h3>Leakage control</h3></div>
+          <ul class="checklist">
+            <li>Data is split by whole runs (seeds), never by rows: train 0–19, validation 100–105, test 200–205, experiments 1000+.</li>
+            <li>Features use only what the sender has already seen. Simulator settings and the profile name are never inputs.</li>
+            <li>One feature function is shared by training and runtime, and the model file lists the features it expects.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><h3>Variants compared on validation runs</h3><span class="hint">lower is better</span></div>
+          <div class="tbl"><table id="cand-table"><thead><tr><th>Target</th><th>Forest</th><th class="n">MAE ms</th><th class="n">Early-timeout share</th></tr></thead><tbody></tbody></table></div>
+          <p class="caption">Saved as JSON and evaluated in plain Python, not pickle: loading a pickle can run arbitrary code.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 METHOD -->
+<section id="method">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§7</b> Method</span>
+      <h2>Both estimators face exactly the same network</h2>
+      <p class="lede">A comparison is only fair if luck is equal. The proxy decides the fate of each packet copy from a hash of <code>(seed, direction, type, sequence, copy number)</code>, not from a shared random stream.</p>
+    </div>
+    <div class="grid-2">
+      <div class="prose">
+        <p>With a shared random stream, one extra retransmission in one run would shift every later random draw, and the two runs would see different networks. With hashing, "the 2nd copy of chunk 117 is dropped" is true in both runs.</p>
+        <p>Each network × seed pair runs once per strategy: <strong>RFC 6298</strong> (K = 4), the <strong>ML estimator</strong>, and an extra control arm, <strong>RFC with K = 2</strong>, a deliberately shorter timeout. The order of the strategies rotates between seeds.</p>
+        <p>Differences are tested per network with an exact <strong>Wilcoxon signed-rank test</strong> on the 10 paired differences. With 10 pairs the smallest possible p-value is 0.002.</p>
+        <p class="mono" style="font-size:.86rem;color:var(--ink)">Check: measured data loss on "lossy" was <span id="loss-check"></span>.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><h3>Simulated networks</h3><span class="hint">one-way delays · RTT ≈ 2×</span></div>
+        <div class="tbl"><table id="prof-table"><thead><tr><th>Profile</th><th>Conditions</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 RESULTS -->
+<section id="results">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§8</b> Results</span>
+      <h2>210 transfers, all verified. What changed?</h2>
+      <p class="lede">7 networks × 10 seeds × 3 strategies, 1 MiB each. Every received file matched the original byte for byte.</p>
+    </div>
+    <div class="findings">
+      <div class="finding pos"><span class="big num" id="f1">+6–11 %</span><b>Faster on jittery and lossy paths</b><p>Goodput rose on lossy, jitter-heavy and duplicate/reorder networks (p = 0.002 each), because lost packets were repaired 9–21 % sooner.</p></div>
+      <div class="finding mix"><span class="big num">≈2×</span><b>But more wasted resends</b><p>Unnecessary retransmissions roughly doubled. Most of the speed-up is also available from simply shortening the RFC formula (K = 2). Against that, ML wastes 60 % fewer resends under heavy jitter.</p></div>
+      <div class="finding neg"><span class="big num">3.8×</span><b>Worse on a changing path</b><p>When the delay ramps from 15 to 120 ms, the model's timeout lagged behind: no throughput gain and 3.8× the unnecessary resends.</p></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><h3>Explore by network</h3><span class="hint">mean of 10 paired seeds · whiskers in text show ±1 sd</span></div>
+      <div class="prof-tabs seg" id="prof-tabs" role="group" aria-label="Choose network profile"></div>
+      <p class="prof-desc" id="prof-desc"></p>
+      <div class="metric-cards" id="metric-cards"></div>
+    </div>
+
+    <div class="panel" style="margin-top:24px">
+      <div class="panel-title"><h3>Speed versus waste</h3><span class="hint">up and to the left is better · click a network to open it above</span></div>
+      <div class="legend-row" style="margin-bottom:10px">
+        <span class="key"><i style="background:var(--c-rto)"></i>RFC 6298 (K = 4)</span>
+        <span class="key"><i style="background:var(--c-k2)"></i>RFC, K = 2 (shorter)</span>
+        <span class="key"><i style="background:var(--c-ml)"></i>ML estimator</span>
+      </div>
+      <div class="small-mult" id="small-mult"></div>
+    </div>
+
+    <div class="panel" style="margin-top:24px">
+      <div class="panel-title"><h3>Change in the mean, every network and metric</h3>
+        <div class="seg" id="heat-cmp" role="group" aria-label="Choose comparison">
+          <button aria-pressed="true" data-cmp="ml_vs_rto">ML vs RFC</button>
+          <button aria-pressed="false" data-cmp="ml_vs_rto_k2">ML vs RFC K=2</button>
+          <button aria-pressed="false" data-cmp="rto_k2_vs_rto">K=2 vs RFC</button>
+        </div>
+      </div>
+      <div class="tbl"><table class="heat" id="heat"></table></div>
+      <p class="caption">Green is better for the first strategy, red is worse; colour saturates at ±25 %. * = paired Wilcoxon p &lt; 0.05.</p>
+    </div>
+
+    <div class="panel" style="margin-top:24px">
+      <div class="panel-title"><h3>Inside one transfer: RTT and the chosen timeout</h3>
+        <div class="seg" id="tl-pick" role="group" aria-label="Choose trace">
+          <button aria-pressed="true" data-tl="changing">changing</button>
+          <button aria-pressed="false" data-tl="jitter">jitter_heavy</button>
+        </div>
+      </div>
+      <svg id="timeline" viewBox="0 0 900 470" role="img" aria-label="Timeline of RTT samples and the selected timeout for both estimators"></svg>
+      <div class="legend-row">
+        <span class="key"><i style="background:var(--ink-3);border-radius:50%;width:7px;height:7px"></i>RTT sample</span>
+        <span class="key"><i style="background:var(--c-rto)"></i>RFC timeout</span>
+        <span class="key"><i style="background:var(--c-ml)"></i>ML timeout</span>
+        <span class="key"><i style="background:var(--ink);width:2px;height:10px"></i>timeout fired</span>
+      </div>
+      <p class="caption" id="tl-note"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 LESSONS -->
+<section id="lessons">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§9</b> The main lesson</span>
+      <h2>More accurate offline did not mean better online</h2>
+      <p class="lede">On held-out test runs the ML timeout was closer to its target and less likely to fire early than RFC 6298. In live transfers it fired early more often. The prediction error alone did not predict protocol behaviour.</p>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-title"><h3>Offline: held-out test runs</h3><span class="hint" id="off-n"></span></div>
+        <div class="tbl"><table id="off-table"><thead><tr><th>Network</th><th class="n">RFC MAE</th><th class="n">ML MAE</th><th class="n">RFC early</th><th class="n">ML early</th></tr></thead><tbody></tbody></table></div>
+        <p class="caption">MAE = mean |timeout − target| in ms. "Early" = share of upcoming delivered packets whose RTT exceeds the timeout.</p>
+      </div>
+      <div style="display:grid;gap:16px;min-width:0">
+        <div class="panel">
+          <div class="panel-title"><h3>Unseen conditions: leave one network out</h3></div>
+          <svg id="lopo-chart" viewBox="0 0 520 150" role="img" aria-label="Error on the changing network for three estimators"></svg>
+          <p class="caption">A model trained without the "changing" network was less accurate on it than the plain formula. Tree models do not extrapolate.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><h3>Why offline and online disagree</h3></div>
+          <ul class="checklist">
+            <li><b>Correlated errors.</b> When a slow period starts, every in-flight timer fires together; one short timeout becomes dozens of resends.</li>
+            <li><b>Feedback.</b> Each early timeout makes a packet ambiguous under Karn's rule, so history thins out exactly when conditions change.</li>
+            <li><b>Backoff hides the formula's errors.</b> After a timeout, the doubled RFC value persists and protects it.</li>
+            <li><b>Covariate shift.</b> Training traces came from the RFC estimator; under ML control the sender sees more resends than any training run.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 ENGINEERING -->
+<section id="engineering">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§10</b> Engineering quality</span>
+      <h2>Tested, defensive, reproducible</h2>
+    </div>
+    <div class="cards-3" style="margin-top:0">
+      <div class="card"><span class="tag">Correctness</span><h3 style="font-family:var(--f-body);text-transform:none;font-stretch:100%">120 automated tests</h3>
+        <ul class="checklist"><li>5,000 random datagrams and every single-bit flip rejected</li><li>RTO values checked against hand calculations</li><li>Transfers under every network profile</li><li>Empty, 1-byte, 8 MiB and binary files</li><li>Receiver crash, idle sender, hash mismatch</li></ul></div>
+      <div class="card"><span class="tag">Security</span><h3 style="font-family:var(--f-body);text-transform:none;font-stretch:100%">Input is hostile until checked</h3>
+        <ul class="checklist"><li>One validation boundary for every datagram</li><li>Filenames with <code>/</code>, <code>..</code> or control characters rejected</li><li>Bounded buffers, reads, file size and transfer count</li><li>Optional HMAC-SHA256 with a pre-shared key</li><li>No pickle anywhere</li></ul></div>
+      <div class="card"><span class="tag">Reproducibility</span><h3 style="font-family:var(--f-body);text-transform:none;font-stretch:100%">Every number is regenerated</h3>
+        <ul class="checklist"><li>Seeds recorded in every output file</li><li>Received files re-hashed independently by the test harness</li><li>Plots and tables built only from result files</li><li>Runtime needs only the Python standard library</li></ul></div>
+    </div>
+    <div class="card bug" style="margin-top:16px"><span class="tag">Second bug caught by the independent check</span><p>While running experiments, the harness reported files that did not match even though the receiver said "OK". A finished transfer was still reserving its filename, so the next file went to <code>name (1).bin</code>. Fixed, and a regression test now guards it.</p></div>
+  </div>
+</section>
+
+<!-- 11 CONCLUSION -->
+<section id="conclusion" style="border-bottom:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><b>§11</b> Conclusion</span>
+      <h2>A useful refinement, safe only with a fallback</h2>
+    </div>
+    <div class="grid-2">
+      <div class="verdict-box">
+        <p><b style="color:var(--ink)">The reliability layer works.</b> 210 out of 210 transfers arrived intact across loss, bursts, jitter, duplication, reordering and corruption.</p>
+        <p><b style="color:var(--ink)">The ML timeout is not better in general.</b> It is faster on lossy and jittery paths but wastes more traffic, and most of its speed comes from being shorter. Its real advantage is selectivity under heavy-tailed jitter and burst loss. On a changing path it is worse.</p>
+        <p><b style="color:var(--ink)">Limits.</b> One machine over loopback; user-space delay with no queueing or congestion control; trained and tested on the same simulator; 10 seeds per network.</p>
+        <p><b style="color:var(--ink)">Next steps.</b> Calibrate on end-to-end waste, retrain on traces collected under ML control, use an asymmetric loss, test over real links with <code>tc netem</code>, and add fast retransmit.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><h3>Run it yourself</h3><span class="hint">from the project folder</span></div>
+        <div class="cmds" id="cmds"></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer><div class="wrap"><span>AI-Adaptive Reliable File Transfer over UDP · Madhavarapu Venkata Lakshmi Jyothiradithya (24BCI0184)</span><span>All figures computed from <code>results/trials.csv</code> and <code>results/offline_eval.csv</code></span></div></footer>
+
+<script>
+const DATA = __DATA__;
+(function(){
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const root = document.documentElement;
+const $ = (s, r = document) => r.querySelector(s);
+function svgEl(tag, attrs, parent){ const e = document.createElementNS(NS, tag); if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, cls, extra){ const t = svgEl("text", Object.assign({x, y, class: cls || "t-2", "font-size": 12}, extra || {}), parent); t.textContent = s; return t; }
+function clear(n){ while (n.firstChild) n.removeChild(n.firstChild); }
+function cssVar(name){ return getComputedStyle(root).getPropertyValue(name).trim(); }
+function niceTicks(min, max, n){ const span = (max - min) || 1, s0 = span / (n || 5), mag = Math.pow(10, Math.floor(Math.log10(s0))), e = s0 / mag;
+  const step = (e >= 7.5 ? 10 : e >= 3.5 ? 5 : e >= 1.5 ? 2 : 1) * mag; const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step;
+  const out = []; for (let v = lo; v <= hi + step / 2; v += step) out.push(+v.toFixed(10)); return out; }
+const fmt = (v, d) => v == null ? "–" : v.toLocaleString("en-US", {minimumFractionDigits: d, maximumFractionDigits: d});
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------------- looks ---------------- */
+const LOOK_NAMES = {auto: "Auto", paper: "Paper (RFC)", console: "Console (NOC)", blueprint: "Blueprint", capture: "Capture"};
+const lookListeners = [];
+function setLook(look){
+  if (look === "auto") delete root.dataset.look; else root.dataset.look = look;
+  document.querySelectorAll(".look-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.look === look)));
+  $("#look-name").textContent = "Look: " + LOOK_NAMES[look];
+  try { localStorage.setItem("udp-rto-look", look); } catch (e) {}
+  lookListeners.forEach(f => f());
+}
+document.querySelectorAll(".look-btn").forEach(b => b.addEventListener("click", () => setLook(b.dataset.look)));
+let saved = "auto"; try { saved = localStorage.getItem("udp-rto-look") || "auto"; } catch (e) {}
+if (!LOOK_NAMES[saved]) saved = "auto";
+setLook(saved);
+
+/* ---------------- nav highlight ---------------- */
+const navLinks = [...document.querySelectorAll(".nav a")];
+if ("IntersectionObserver" in window){
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ navLinks.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); } }), {rootMargin: "-45% 0px -50% 0px"});
+  document.querySelectorAll("main section[id]").forEach(s => io.observe(s));
+}
+
+/* ---------------- hero wire animation ---------------- */
+(function wire(){
+  const cv = $("#wire"), ctx = cv.getContext("2d");
+  let W = 0, H = 0, dpr = 1, colors = {};
+  function readColors(){ colors = {ink: cssVar("--ink"), ink2: cssVar("--ink-2"), ink3: cssVar("--ink-3"), line: cssVar("--line"), s2: cssVar("--surface-2"), surf: cssVar("--surface"), acc: cssVar("--accent"), ack: cssVar("--c-k2"), bad: cssVar("--bad"), retx: cssVar("--c-ml"), mono: cssVar("--f-mono")}; }
+  function size(){ dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  const LOST = new Set([3, 9, 14, 22, 27, 31]);
+  let pk = [], nextSeq = 0, clock = 0, lastSpawn = -1;
+  const SPEED = 0.18; // fraction of path per second
+  function spawn(seq, retx){ pk.push({kind: "data", seq, p: 0, retx, lost: !retx && LOST.has(seq % 36), dead: false, fall: 0}); }
+  function step(dt){
+    clock += dt;
+    const inflight = pk.filter(p => p.kind === "data" && !p.dead).length;
+    if (clock - lastSpawn > 0.42 && inflight < 7){ spawn(nextSeq++, false); lastSpawn = clock; }
+    for (const p of pk){
+      if (p.dead) continue;
+      if (p.kind === "data"){
+        if (p.lost && p.p >= 0.5){ p.fall += dt; if (p.fall > 1.1){ p.dead = true; p.retryAt = clock + 1.2; } continue; }
+        p.p += SPEED * dt;
+        if (p.p >= 1){ p.dead = true; pk.push({kind: "ack", seq: p.seq, p: 1, dead: false}); }
+      } else {
+        p.p -= SPEED * 1.15 * dt; if (p.p <= 0) p.dead = true;
+      }
+    }
+    for (const p of pk){ if (p.kind === "data" && p.lost && p.dead && p.retryAt && clock >= p.retryAt){ p.retryAt = null; spawn(p.seq, true); } }
+    pk = pk.filter(p => !p.dead || p.retryAt);
+    if (nextSeq > 400){ nextSeq = 0; }
+  }
+  function roundRect(x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    const pad = Math.max(16, W * 0.03), boxW = Math.min(150, W * 0.2), x0 = pad + boxW, x1 = W - pad - boxW;
+    const yD = H * 0.40, yA = H * 0.66;
+    const mid = (x0 + x1) / 2, cloudW = Math.min(220, (x1 - x0) * 0.42);
+    // nodes
+    ctx.font = `600 12px ${colors.mono}`;
+    [[pad, "SENDER", "sender.py"], [W - pad - boxW, "RECEIVER", "receiver.py"]].forEach(([x, a, b]) => {
+      roundRect(x, H * 0.24, boxW, H * 0.56, 6); ctx.fillStyle = colors.s2; ctx.fill(); ctx.strokeStyle = colors.line; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = colors.ink; ctx.textAlign = "center"; ctx.fillText(a, x + boxW / 2, H * 0.24 + 24);
+      ctx.fillStyle = colors.ink3; ctx.font = `400 11px ${colors.mono}`; ctx.fillText(b, x + boxW / 2, H * 0.24 + 42); ctx.font = `600 12px ${colors.mono}`;
+    });
+    // network zone
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = colors.line; roundRect(mid - cloudW / 2, H * 0.14, cloudW, H * 0.72, 10); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = colors.ink3; ctx.textAlign = "center"; ctx.font = `500 11px ${colors.mono}`; ctx.fillText("IMPAIRMENT PROXY", mid, H * 0.14 + 16);
+    ctx.fillText("delay · jitter · loss", mid, H * 0.86 - 8);
+    // lanes
+    ctx.strokeStyle = colors.line; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x0, yD); ctx.lineTo(x1, yD); ctx.moveTo(x0, yA); ctx.lineTo(x1, yA); ctx.stroke();
+    // packets
+    ctx.font = `600 10px ${colors.mono}`;
+    for (const p of pk){
+      if (p.dead) continue;
+      const x = x0 + (x1 - x0) * Math.min(p.p, 1);
+      if (p.kind === "data"){
+        let y = yD, alpha = 1, col = p.retx ? colors.retx : colors.acc;
+        if (p.lost && p.p >= 0.5){ y = yD + p.fall * 46; alpha = Math.max(0, 1 - p.fall / 1.1); col = colors.bad; }
+        ctx.globalAlpha = alpha; roundRect(x - 17, y - 10, 34, 20, 3); ctx.fillStyle = col; ctx.fill();
+        ctx.fillStyle = colors.surf; ctx.textAlign = "center"; ctx.fillText(String(p.seq), x, y + 4);
+        if (p.lost && p.p >= 0.5){ ctx.strokeStyle = colors.bad; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 6, yD - 18); ctx.lineTo(x + 6, yD - 6); ctx.moveTo(x + 6, yD - 18); ctx.lineTo(x - 6, yD - 6); ctx.stroke(); }
+        ctx.globalAlpha = 1;
+      } else {
+        roundRect(x - 13, yA - 7, 26, 14, 3); ctx.fillStyle = colors.ack; ctx.fill();
+        ctx.fillStyle = colors.surf; ctx.textAlign = "center"; ctx.font = `600 9px ${colors.mono}`; ctx.fillText(String(p.seq), x, yA + 3); ctx.font = `600 10px ${colors.mono}`;
+      }
+    }
+    ctx.textAlign = "left"; ctx.fillStyle = colors.ink3; ctx.font = `400 10px ${colors.mono}`;
+    ctx.fillText("DATA →", x0 + 6, yD - 16); ctx.textAlign = "right"; ctx.fillText("← ACK", x1 - 6, yA + 22);
+  }
+  let last = 0, running = false, visible = true;
+  function frame(t){ if (!running) return; const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t; step(dt); draw(); requestAnimationFrame(frame); }
+  function start(){ if (running || reduced || !visible) return; running = true; last = performance.now(); requestAnimationFrame(frame); }
+  function stop(){ running = false; }
+  readColors(); size();
+  if (reduced){ for (let i = 0; i < 260; i++) step(1 / 30); draw(); }
+  else { for (let i = 0; i < 120; i++) step(1 / 30); draw(); start(); }
+  window.addEventListener("resize", () => { size(); draw(); });
+  lookListeners.push(() => { readColors(); draw(); });
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { readColors(); draw(); });
+  new MutationObserver(() => { readColors(); draw(); }).observe(root, {attributes: true, attributeFilter: ["data-theme"]});
+  if ("IntersectionObserver" in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; visible ? start() : stop(); }).observe(cv);
+})();
+
+/* ---------------- §1 RTT explorer ---------------- */
+(function rttExplorer(){
+  const svg = $("#rtt-hist"), rtts = DATA.rtt_jitter.slice().sort((a, b) => a - b), n = rtts.length;
+  const pct = q => { const pos = (n - 1) * q, lo = Math.floor(pos), hi = Math.min(lo + 1, n - 1); return rtts[lo] + (rtts[hi] - rtts[lo]) * (pos - lo); };
+  const p50 = pct(0.5), p95 = pct(0.95);
+  const M = {l: 40, r: 14, t: 26, b: 34}, Wd = 560, Ht = 230, x0 = 58, x1 = 132, bw = 1.5;
+  const sx = v => M.l + (v - x0) / (x1 - x0) * (Wd - M.l - M.r);
+  const bins = []; for (let b = x0; b < x1; b += bw) bins.push({b, c: 0});
+  rtts.forEach(v => { const i = Math.floor((Math.min(Math.max(v, x0), x1 - 0.001) - x0) / bw); bins[i].c++; });
+  const maxC = Math.max(...bins.map(b => b.c)), yT = niceTicks(0, maxC, 4);
+  const sy = c => Ht - M.b - c / yT[yT.length - 1] * (Ht - M.t - M.b);
+  yT.forEach(t => { svgEl("line", {x1: M.l, x2: Wd - M.r, y1: sy(t), y2: sy(t), class: "gridl"}, svg); txt(svg, M.l - 6, sy(t) + 4, t, "t-3", {"text-anchor": "end", "font-size": 10}); });
+  niceTicks(x0, x1, 6).filter(t => t >= x0 && t <= x1).forEach(t => txt(svg, sx(t), Ht - M.b + 16, t, "t-3", {"text-anchor": "middle", "font-size": 10}));
+  txt(svg, Wd - M.r, Ht - 4, "round-trip time (ms)", "t-3", {"text-anchor": "end", "font-size": 10});
+  txt(svg, 4, 12, "packets", "t-3", {"font-size": 10});
+  const barsG = svgEl("g", null, svg);
+  const rects = bins.map(b => svgEl("rect", {x: sx(b.b) + 0.5, y: sy(b.c), width: Math.max(1, sx(b.b + bw) - sx(b.b) - 1), height: Ht - M.b - sy(b.c), rx: 1}, barsG));
+  [[p50, "median"], [p95, "P95"]].forEach(([v, l]) => { svgEl("line", {x1: sx(v), x2: sx(v), y1: M.t + 18, y2: Ht - M.b, class: "k-3", "stroke-dasharray": "3 3"}, svg); txt(svg, sx(v) + 4, M.t + 26, l, "t-3", {"font-size": 10}); });
+  const mk = svgEl("g", null, svg);
+  const mLine = svgEl("line", {y1: M.t, y2: Ht - M.b, class: "k-ml", "stroke-width": 2.5}, mk);
+  const mLab = txt(mk, 0, M.t + 8, "", "t-ink", {"font-size": 11, "font-weight": 600});
+  const slider = $("#rto-slider");
+  $("#ro-p95").textContent = fmt(p95, 1) + " ms";
+  function update(){
+    const rto = +slider.value; $("#rto-val").textContent = rto + " ms";
+    rects.forEach((r, i) => r.setAttribute("class", bins[i].b + bw / 2 > rto ? "f-bad" : "f-rto"));
+    mLine.setAttribute("x1", sx(rto)); mLine.setAttribute("x2", sx(rto));
+    const left = sx(rto) > Wd - 110; mLab.setAttribute("x", sx(rto) + (left ? -6 : 6)); mLab.setAttribute("text-anchor", left ? "end" : "start"); mLab.textContent = "timeout " + rto + " ms";
+    const early = rtts.filter(v => v > rto).length / n;
+    $("#ro-early").textContent = fmt(early * 100, 1) + " %";
+    $("#ro-idle").textContent = "+" + fmt(Math.max(0, rto - p50), 0) + " ms";
+  }
+  slider.addEventListener("input", update); update();
+})();
+
+/* ---------------- §3 packet header ---------------- */
+(function header(){
+  const hex = DATA.hex, bytes = []; for (let i = 0; i < hex.length; i += 2) bytes.push(parseInt(hex.substr(i, 2), 16));
+  const be = (a, b) => bytes.slice(a, b).reduce((v, x) => v * 256 + x, 0);
+  const h = n => "0x" + n.toString(16).toUpperCase().padStart(2, "0");
+  const F = [
+    {k: "magic", bits: 16, row: 0, a: 0, b: 2, d: "Constant 0x5255 (ASCII \"RU\"). Lets the receiver drop unrelated traffic immediately.", v: () => h(be(0, 2)) + " = \"" + String.fromCharCode(bytes[0], bytes[1]) + "\""},
+    {k: "version", bits: 8, row: 0, a: 2, b: 3, d: "Protocol version, currently 1. Anything else is rejected.", v: () => String(bytes[2])},
+    {k: "type", bits: 8, row: 0, a: 3, b: 4, d: "1 SYN · 2 SYN_ACK · 3 DATA · 4 ACK · 5 FIN · 6 FIN_ACK · 7 ERROR.", v: () => bytes[3] + " = DATA"},
+    {k: "flags", bits: 8, row: 1, a: 4, b: 5, d: "Bit 0 means a 16-byte HMAC-SHA256 tag follows the payload. Other bits must be zero.", v: () => h(bytes[4]) + " (no HMAC)"},
+    {k: "reserved", bits: 8, row: 1, a: 5, b: 6, d: "Must be zero. Reserved for future versions.", v: () => h(bytes[5])},
+    {k: "payload_len", bits: 16, row: 1, a: 6, b: 8, d: "Payload size in bytes (max 1,200). Must match the real datagram length exactly, or the packet is rejected.", v: () => be(6, 8) + " bytes"},
+    {k: "transfer_id", bits: 32, row: 2, a: 8, b: 12, d: "Random 32-bit number chosen per transfer. Packets from other transfers, or from another address, are ignored.", v: () => "0x" + be(8, 12).toString(16).toUpperCase()},
+    {k: "seq", bits: 32, row: 3, a: 12, b: 16, d: "DATA: the chunk number. ACK: the chunk being acknowledged (selective). Counts chunks, so wrap-around would need a ~5 TB file.", v: () => String(be(12, 16))},
+    {k: "ack", bits: 32, row: 4, a: 16, b: 20, d: "ACK only: the lowest chunk not yet received (cumulative). Makes lost ACKs harmless.", v: () => String(be(16, 20)) + " (unused in DATA)"},
+    {k: "checksum", bits: 32, row: 5, a: 20, b: 24, d: "CRC-32 over the header (with this field set to zero) and the payload. Catches accidental corruption, not forgery.", v: () => "0x" + be(20, 24).toString(16).toUpperCase().padStart(8, "0")},
+    {k: "payload", bits: 32, row: 6, a: 24, b: bytes.length, d: "File bytes. Exactly the chunk size, except for the last chunk.", v: () => "\"" + String.fromCharCode(...bytes.slice(24)) + "\"", pay: true}
+  ];
+  const hdr = $("#hdr"), bitsRow = $("#hdr-bits");
+  for (let i = 0; i < 32; i++){ const s = document.createElement("span"); s.textContent = i % 8 === 0 ? i : (i % 4 === 0 ? "·" : ""); bitsRow.appendChild(s); }
+  const rows = []; for (let r = 0; r < 7; r++){ const d = document.createElement("div"); d.className = "hdr-row"; hdr.appendChild(d); rows.push(d); }
+  const dump = $("#hexdump"), spans = bytes.map((b, i) => { const s = document.createElement("span"); s.textContent = b.toString(16).padStart(2, "0"); dump.appendChild(s); return s; });
+  const info = $("#field-info"), btns = [];
+  F.forEach((f, i) => {
+    const b = document.createElement("button"); b.className = "fld" + (f.pay ? " pay" : ""); b.style.gridColumn = "span " + f.bits;
+    b.innerHTML = f.k + "<small>" + (f.pay ? "0–1,200 bytes" : f.bits + " bits") + "</small>";
+    b.setAttribute("aria-label", f.k + " field"); b.addEventListener("click", () => select(i)); b.addEventListener("mouseenter", () => select(i));
+    rows[f.row].appendChild(b); btns.push(b);
+  });
+  function select(i){
+    const f = F[i]; btns.forEach((b, j) => b.classList.toggle("sel", j === i));
+    spans.forEach((s, j) => s.classList.toggle("sel", j >= f.a && j < f.b));
+    info.innerHTML = '<span class="fn">' + f.k + ' · bytes ' + f.a + '–' + (f.b - 1) + '</span><span class="fv">value in this packet: ' + f.v() + '</span><p>' + f.d + '</p>';
+  }
+  select(7);
+})();
+
+/* ---------------- §4 Selective Repeat ladder ---------------- */
+(function selectiveRepeat(){
+  const svg = $("#sr-svg"), N = 8, WIN = 4, D = 1.0, TMAX = 10.2;
+  const XS = 110, XR = 530, Y0 = 52, PX = 54, ty = t => Y0 + t * PX;
+  const arrows = [], events = [];
+  const data = (seq, t, o) => arrows.push({dir: 1, t0: t, t1: t + D, seq, label: (o && o.retx ? "DATA " + seq + " (resent)" : "DATA " + seq), kind: o && o.retx ? "retx" : "data", lost: !!(o && o.lost)});
+  const ack = (seq, cum, t, lost) => arrows.push({dir: -1, t0: t, t1: t + D, label: "ACK " + seq + " · cum " + cum, kind: "ack", lost: !!lost});
+  const ev = (t, text, fn, cap) => events.push({t, text, fn, cap: cap !== false});
+  // sender sends 0-3
+  [0, 1, 2, 3].forEach((s, i) => { data(s, i * 0.3, {lost: s === 1}); ev(i * 0.3, "Sender transmits DATA 0–3 back to back: the whole window of 4.", st => { st.send[s] = "flight"; }, i === 0); });
+  ev(0.8, "DATA 1 is lost in the network.", () => {});
+  ev(1.0, "Receiver gets DATA 0 in order, writes it and sends ACK 0 with cumulative 1 (next expected).", st => { st.recv[0] = "done"; st.exp = 1; }); ack(0, 1, 1.0);
+  ev(1.6, "DATA 2 arrives while 1 is missing: buffered, not written. ACK 2 is selective; cumulative still says 1.", st => { st.recv[2] = "buf"; }); ack(2, 1, 1.6);
+  ev(1.9, "DATA 3 is buffered the same way.", st => { st.recv[3] = "buf"; }, false); ack(3, 1, 1.9);
+  ev(2.0, "ACK 0 arrives. Its RTT is a valid sample for the estimator. The window slides to 1–4 and DATA 4 is sent.", st => { st.send[0] = "acked"; st.base = 1; st.send[4] = "flight"; st.rtt = "RTT sample 2.0"; }); data(4, 2.0);
+  ev(2.6, "Selective ACKs mark 2 and 3 as delivered, but the window cannot slide past the hole at 1.", st => { st.send[2] = "acked"; }); ev(2.9, "", st => { st.send[3] = "acked"; }, false);
+  ev(3.0, "DATA 4 is buffered as well.", st => { st.recv[4] = "buf"; }, false); ack(4, 1, 3.0);
+  ev(3.2, "The timer for DATA 1 expires. Only DATA 1 is resent, and the timeout doubles (backoff).", st => { st.timeouts = 1; st.rtt = "timeout · RTO ×2"; }); data(1, 3.2, {retx: true});
+  ev(4.0, "", st => { st.send[4] = "acked"; }, false);
+  ev(4.2, "The resent DATA 1 fills the hole. The receiver writes 1, 2, 3 and 4 in order; cumulative ACK is now 5.", st => { [1, 2, 3, 4].forEach(i => st.recv[i] = "done"); st.exp = 5; }); ack(1, 5, 4.2);
+  ev(5.2, "ACK 1 arrives. Karn's rule: no RTT sample, because DATA 1 was sent twice. The window slides to 5–8 and DATA 5–7 go out.", st => { st.send[1] = "acked"; st.base = 5; st.rtt = "no sample (Karn)"; [5, 6, 7].forEach(i => st.send[i] = "flight"); });
+  [5, 6, 7].forEach((s, i) => { data(s, 5.2 + i * 0.3); });
+  [5, 6, 7].forEach((s, i) => { ev(6.2 + i * 0.3, "", st => { st.recv[s] = "done"; st.exp = s + 1; }, false); ack(s, s + 1, 6.2 + i * 0.3, s === 6); });
+  ev(7.0, "ACK 6 is lost on the way back.", () => {});
+  ev(7.2, "", st => { st.send[5] = "acked"; st.base = 6; }, false);
+  ev(7.8, "ACK 7 carries cumulative 8, which also confirms DATA 6. The lost ACK cost nothing. The sender sends FIN.", st => { st.send[6] = "acked"; st.send[7] = "acked"; st.base = 8; st.rtt = "RTT sample 2.0"; });
+  arrows.push({dir: 1, t0: 7.9, t1: 8.9, label: "FIN", kind: "fin", lost: false});
+  ev(8.9, "The receiver checks that all 8 chunks arrived and that the SHA-256 matches the hash sent in the SYN, then renames the file and replies FIN_ACK(OK).", st => { st.fin = true; });
+  arrows.push({dir: -1, t0: 8.9, t1: 9.9, label: "FIN_ACK (OK)", kind: "fin", lost: false});
+  ev(9.9, "FIN_ACK(OK) arrives. Only this counts as success.", st => { st.success = true; });
+  events.sort((a, b) => a.t - b.t);
+  const caps = events.filter(e => e.cap);
+
+  // static frame
+  const H = ty(TMAX) + 10; svg.setAttribute("viewBox", "0 0 640 " + H);
+  [[XS, "Sender"], [XR, "Receiver"]].forEach(([x, l]) => { svgEl("line", {x1: x, x2: x, y1: Y0 - 6, y2: H - 6, class: "k-2", "stroke-width": 2}, svg); txt(svg, x, 24, l, "t-ink", {"text-anchor": "middle", "font-size": 14, "font-weight": 600}); });
+  txt(svg, 14, Y0 + 6, "time", "t-3", {"font-size": 10}); svgEl("path", {d: `M22 ${Y0 + 14} L22 ${Y0 + 52} M18 ${Y0 + 46} L22 ${Y0 + 52} L26 ${Y0 + 46}`, class: "k-3", fill: "none"}, svg);
+  const defs = svgEl("defs", null, svg);
+  ["acc", "ml", "k2", "3"].forEach(k => { const m = svgEl("marker", {id: "ah-" + k, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse"}, defs); svgEl("path", {d: "M0 0 L10 5 L0 10 z", class: {acc: "f-acc", ml: "f-ml", k2: "f-k2", "3": "f-muted"}[k]}, m); });
+  const g = svgEl("g", null, svg), cursor = svgEl("line", {x1: XS - 30, x2: XR + 30, class: "k-acc", "stroke-dasharray": "2 4", "stroke-width": 1}, svg);
+  const toMark = svgEl("g", null, svg);
+  const els = arrows.map(a => {
+    const k = a.kind === "data" ? "acc" : a.kind === "retx" ? "ml" : a.kind === "ack" ? "k2" : "3";
+    const ln = svgEl("line", {class: "k-" + k, "stroke-width": a.kind === "ack" || a.kind === "fin" ? 1.6 : 2.2}, g);
+    const xa = a.dir > 0 ? XS : XR, xb = a.dir > 0 ? XR : XS;
+    const frac = a.dir > 0 ? 0.24 : 0.24, lx = xa + (xb - xa) * frac, ly = ty(a.t0) + (ty(a.t1) - ty(a.t0)) * frac;
+    const dy = ty(a.t1) - ty(a.t0), ang = Math.atan2(a.dir > 0 ? dy : -dy, XR - XS) * 180 / Math.PI;
+    const lb = txt(g, lx, ly - 5, a.label, a.lost ? "f-bad" : (a.kind === "retx" ? "f-ml" : (a.kind === "ack" ? "f-k2" : (a.kind === "fin" ? "t-2" : "f-acc"))), {"font-size": 11, "font-weight": 600, "text-anchor": "middle", transform: `rotate(${ang} ${lx} ${ly - 5})`});
+    const x = svgEl("path", {class: "k-bad", "stroke-width": 2.5, fill: "none"}, g);
+    return {a, ln, lb, x, xa, xb};
+  });
+  // timeout marker for DATA 1
+  svgEl("path", {d: `M${XS - 8} ${ty(0.3)} L${XS - 22} ${ty(0.3)} L${XS - 22} ${ty(3.2)} L${XS - 8} ${ty(3.2)}`, class: "k-ml", fill: "none", "stroke-dasharray": "3 3"}, toMark);
+  txt(toMark, XS - 28, (ty(0.3) + ty(3.2)) / 2, "RTO", "f-ml", {"font-size": 11, "font-weight": 600, "text-anchor": "middle", transform: `rotate(-90 ${XS - 28} ${(ty(0.3) + ty(3.2)) / 2})`});
+  const sendCells = $("#sr-send"), recvCells = $("#sr-recv");
+  const sc = [], rc = []; for (let i = 0; i < N; i++){ const a = document.createElement("div"); a.className = "cell"; a.textContent = i; sendCells.appendChild(a); sc.push(a); const b = document.createElement("div"); b.className = "cell"; b.textContent = i; recvCells.appendChild(b); rc.push(b); }
+  const log = $("#sr-log"); const lis = caps.map((e, i) => { const li = document.createElement("li"); const b = document.createElement("button"); b.innerHTML = '<span class="tm">t=' + e.t.toFixed(1) + '</span>' + e.text; b.addEventListener("click", () => { pause(); T = e.t; render(); }); li.appendChild(b); log.appendChild(li); return li; });
+
+  let T = 0, playing = false, last = 0;
+  function stateAt(t){ const st = {send: Array(N).fill("idle"), recv: Array(N).fill("none"), base: 0, exp: 0, rtt: "", timeouts: 0}; events.forEach(e => { if (e.t <= t + 1e-9) e.fn(st); }); return st; }
+  function render(){
+    els.forEach(o => {
+      const a = o.a; if (T < a.t0 - 1e-9){ o.ln.style.display = "none"; o.lb.style.display = "none"; o.x.style.display = "none"; return; }
+      const span = a.t1 - a.t0, lim = a.lost ? 0.5 : 1, prog = Math.min((T - a.t0) / span, lim);
+      const x2 = o.xa + (o.xb - o.xa) * prog, y2 = ty(a.t0) + (ty(a.t1) - ty(a.t0)) * prog;
+      o.ln.style.display = ""; o.ln.setAttribute("x1", o.xa); o.ln.setAttribute("y1", ty(a.t0)); o.ln.setAttribute("x2", x2); o.ln.setAttribute("y2", y2);
+      o.lb.style.display = prog > 0.3 ? "" : "none";
+      if (a.lost && prog >= 0.5){ o.x.style.display = ""; o.x.setAttribute("d", `M${x2 - 7} ${y2 - 7} L${x2 + 7} ${y2 + 7} M${x2 + 7} ${y2 - 7} L${x2 - 7} ${y2 + 7}`); } else o.x.style.display = "none";
+    });
+    toMark.style.display = T >= 3.2 ? "" : "none";
+    cursor.setAttribute("y1", ty(T)); cursor.setAttribute("y2", ty(T));
+    const st = stateAt(T);
+    sc.forEach((c, i) => { c.className = "cell" + (st.send[i] === "flight" ? " flight" : st.send[i] === "acked" ? " acked" : "") + (i >= st.base && i < st.base + WIN && st.base < N ? " inwin" : ""); });
+    rc.forEach((c, i) => { c.className = "cell" + (st.recv[i] === "done" ? " done" : st.recv[i] === "buf" ? " buf" : ""); });
+    $("#sr-base").textContent = st.base >= N ? "all 8 acknowledged" : "base " + st.base + " · window " + st.base + "–" + Math.min(st.base + WIN - 1, N - 1) + (st.rtt ? " · " + st.rtt : "");
+    $("#sr-exp").textContent = st.success ? "FIN_ACK(OK): transfer verified" : "next expected " + st.exp;
+    let cur = -1; caps.forEach((e, i) => { if (e.t <= T + 1e-9) cur = i; });
+    lis.forEach((li, i) => { li.className = i === cur ? "now" : (i < cur ? "past" : ""); });
+    if (cur >= 0){ const li = lis[cur], box = log; if (li.offsetTop < box.scrollTop || li.offsetTop + li.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = li.offsetTop - 8; }
+  }
+  // arrowheads (lost packets get a cross instead)
+  els.forEach(o => { const k = o.a.kind === "data" ? "acc" : o.a.kind === "retx" ? "ml" : o.a.kind === "ack" ? "k2" : "3"; if (!o.a.lost) o.ln.setAttribute("marker-end", `url(#ah-${k})`); });
+  function frame(t){ if (!playing) return; const dt = Math.min(0.1, (t - last) / 1000); last = t; T += dt * 0.85; if (T >= TMAX){ T = TMAX; pause(); } render(); if (playing) requestAnimationFrame(frame); }
+  function play(){ if (T >= TMAX) T = 0; playing = true; $("#sr-play").textContent = "Pause"; last = performance.now(); requestAnimationFrame(frame); }
+  function pause(){ playing = false; $("#sr-play").textContent = "Play"; }
+  $("#sr-play").addEventListener("click", () => playing ? pause() : play());
+  $("#sr-reset").addEventListener("click", () => { pause(); T = 0; render(); });
+  $("#sr-next").addEventListener("click", () => { pause(); const n = caps.find(e => e.t > T + 1e-6); T = n ? n.t : TMAX; render(); });
+  $("#sr-prev").addEventListener("click", () => { pause(); const p = caps.filter(e => e.t < T - 1e-6).pop(); T = p ? p.t : 0; render(); });
+  T = 0; render();
+})();
+
+/* ---------------- §5 RTO calculator ---------------- */
+(function calc(){
+  const form = $("#calc-form"), input = $("#calc-input"), tbody = $("#calc-table tbody"), svg = $("#calc-chart");
+  function run(){
+    const vals = input.value.split(/[\s,;]+/).map(Number).filter(v => isFinite(v) && v > 0).slice(0, 60);
+    clear(tbody); clear(svg);
+    if (!vals.length){ $("#calc-note").textContent = "Enter positive numbers separated by commas."; return; }
+    let srtt = null, rv = null; const rows = [];
+    vals.forEach((r, i) => { if (srtt === null){ srtt = r; rv = r / 2; } else { rv = 0.75 * rv + 0.25 * Math.abs(srtt - r); srtt = 0.875 * srtt + 0.125 * r; } const rto = Math.min(Math.max(srtt + Math.max(1, 4 * rv), 30), 10000); rows.push({i: i + 1, r, rv, srtt, rto}); });
+    rows.forEach(o => { const tr = document.createElement("tr"); tr.innerHTML = `<td class="n">${o.i}</td><td class="n">${fmt(o.r, 0)}</td><td class="n">${fmt(o.rv, 1)}</td><td class="n">${fmt(o.srtt, 1)}</td><td class="n" style="color:var(--c-rto);font-weight:600">${fmt(o.rto, 1)}</td>`; tbody.appendChild(tr); });
+    const M = {l: 40, r: 12, t: 12, b: 24}, Wd = 520, Ht = 170, maxV = Math.max(...rows.map(o => Math.max(o.r, o.rto))) * 1.05, yt = niceTicks(0, maxV, 4);
+    const sx = i => M.l + (rows.length === 1 ? 0.5 : (i) / (rows.length - 1)) * (Wd - M.l - M.r), sy = v => Ht - M.b - v / yt[yt.length - 1] * (Ht - M.t - M.b);
+    yt.forEach(t => { svgEl("line", {x1: M.l, x2: Wd - M.r, y1: sy(t), y2: sy(t), class: "gridl"}, svg); txt(svg, M.l - 6, sy(t) + 4, t, "t-3", {"text-anchor": "end", "font-size": 10}); });
+    rows.forEach((o, i) => txt(svg, sx(i), Ht - 6, o.i, "t-3", {"text-anchor": "middle", "font-size": 10}));
+    svgEl("polyline", {points: rows.map((o, i) => sx(i) + "," + sy(o.rto)).join(" "), fill: "none", class: "k-rto", "stroke-width": 2.5}, svg);
+    rows.forEach((o, i) => svgEl("circle", {cx: sx(i), cy: sy(o.r), r: 4, class: "f-muted"}, svg));
+    txt(svg, Wd - M.r, M.t + 4, "RTO", "f-rto", {"text-anchor": "end", "font-size": 11, "font-weight": 600}); txt(svg, Wd - M.r - 40, M.t + 4, "● RTT", "t-3", {"text-anchor": "end", "font-size": 11});
+    const peak = rows.reduce((a, b) => b.rto > a.rto ? b : a), lastR = rows[rows.length - 1];
+    $("#calc-note").textContent = `Peak timeout ${fmt(peak.rto, 0)} ms after sample ${peak.i}; ${rows.length - peak.i} samples later it is still ${fmt(lastR.rto, 0)} ms, against a typical RTT of about ${fmt(lastR.srtt, 0)} ms. One spike keeps the timeout inflated: this is where a learned estimator can help.`;
+  }
+  form.addEventListener("submit", e => { e.preventDefault(); run(); }); run();
+})();
+
+/* ---------------- §6 feature importance + candidates ---------------- */
+(function ml(){
+  const svg = $("#imp-chart"), items = Object.entries(DATA.imp).sort((a, b) => b[1] - a[1]);
+  const M = {l: 130, r: 52, t: 6, b: 6}, rowH = (330 - M.t - M.b) / items.length, Wd = 520;
+  items.forEach(([k, v], i) => {
+    const y = M.t + i * rowH, w = v / items[0][1] * (Wd - M.l - M.r);
+    txt(svg, M.l - 8, y + rowH / 2 + 4, k, "t-2", {"text-anchor": "end", "font-size": 11}).style.fontFamily = "var(--f-mono)";
+    svgEl("rect", {x: M.l, y: y + rowH * 0.2, width: Math.max(2, w), height: rowH * 0.6, rx: 2, class: i < 2 ? "f-ml" : "f-muted"}, svg);
+    txt(svg, M.l + Math.max(2, w) + 6, y + rowH / 2 + 4, fmt(v, 3), "t-2", {"font-size": 11});
+  });
+  const tb = $("#cand-table tbody"); const best = DATA.cand.reduce((a, b) => b[2] < a[2] ? b : a);
+  DATA.cand.forEach(c => { const tr = document.createElement("tr"); const isB = c === best; tr.innerHTML = `<td>${c[0]}${isB ? ' <span class="pill good">chosen</span>' : ''}</td><td>${c[1]}</td><td class="n">${fmt(c[2], 2)}</td><td class="n">${fmt(c[3] * 100, 1)} %</td>`; tb.appendChild(tr); });
+})();
+
+/* ---------------- profiles ---------------- */
+const PROFILES = [
+  ["stable", "10 ms one-way, ±1 ms jitter, no loss"],
+  ["high_latency", "150 ms one-way (≈300 ms RTT), ±5 ms, 0.5 % loss each way"],
+  ["lossy", "25 ms, ±2.5 ms, 5 % data loss, 2 % ACK loss"],
+  ["bursty_loss", "25 ms, plus bad periods (~50 ms, every ~0.8 s) with 50 % loss"],
+  ["jitter_heavy", "30 ms plus heavy-tailed (Pareto) delay spikes, 1 % loss"],
+  ["changing", "delay ramps 15 → 120 ms and back to 30 ms every 5 s, 1–3 % loss"],
+  ["dup_reorder", "20 ms, 2 % duplicated, 5 % reordered, 1 % corrupted, delayed ACKs"]
+];
+(function profTable(){ const tb = $("#prof-table tbody"); PROFILES.forEach(([k, d]) => { const tr = document.createElement("tr"); tr.innerHTML = `<td class="mono" style="white-space:nowrap">${k}</td><td>${d}</td>`; tb.appendChild(tr); });
+  const l = DATA.loss.lossy; $("#loss-check").textContent = `${fmt(l.rto, 2)} % (RFC), ${fmt(l.rto_k2, 2)} % (K=2), ${fmt(l.ml, 2)} % (ML)`; })();
+
+/* ---------------- §8 results explorer ---------------- */
+const MODES = [["rto", "RFC 6298 (K=4)", "var(--c-rto)"], ["rto_k2", "RFC, K=2", "var(--c-k2)"], ["ml", "ML estimator", "var(--c-ml)"]];
+const METRICS = [
+  {k: "goodput", pv: "goodput_MBps", t: "Goodput", u: "MB/s", d: 3, better: "higher", sd: "goodput_sd"},
+  {k: "unnec", pv: "unnecessary_retx", t: "Unnecessary retransmissions", u: "", d: 1, better: "lower", sd: "unnec_sd"},
+  {k: "rec", pv: "recovery_ms", t: "Loss-recovery delay", u: "ms", d: 0, better: "lower"},
+  {k: "retx", pv: "retransmissions", t: "All retransmissions", u: "", d: 1, better: "lower"}
+];
+let curProf = "jitter_heavy";
+function verdictPill(pv, better){
+  if (!pv || pv[0] == null) return '<span class="pill flat">no change</span>';
+  const [pct, p] = pv, good = better === "higher" ? pct > 0 : pct < 0, sig = p < 0.05;
+  const cls = !sig || Math.abs(pct) < 0.5 ? "flat" : (good ? "good" : "bad");
+  return `<span class="pill ${cls}">${pct > 0 ? "+" : ""}${fmt(pct, 1)} %</span><span>p = ${p < 0.0021 ? "0.002" : fmt(p, 3)}${sig ? "" : " (not significant)"}</span>`;
+}
+function renderProfile(){
+  document.querySelectorAll("#prof-tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === curProf)));
+  $("#prof-desc").textContent = PROFILES.find(p => p[0] === curProf)[1] + ".";
+  const R = DATA.res[curProf], box = $("#metric-cards"); clear(box);
+  METRICS.forEach(m => {
+    const vals = MODES.map(([mk]) => R[mk][m.k]);
+    const card = document.createElement("div"); card.className = "mc";
+    let html = `<div class="mc-h"><b>${m.t}${m.u ? " (" + m.u + ")" : ""}</b><span class="dir">${m.better} is better</span></div><div class="bars">`;
+    if (vals.every(v => v == null)){ html += `<p class="hint">No packets were lost on this network, so there was nothing to recover.</p>`; }
+    else {
+      const max = Math.max(...vals.filter(v => v != null)) || 1;
+      MODES.forEach(([mk, nm, col], i) => { const v = vals[i]; const sd = m.sd ? R[mk][m.sd] : null;
+        html += `<div class="bar"><span class="nm">${nm}</span><span class="track"><span class="fill" style="width:${v == null ? 0 : Math.max(1.5, v / max * 100)}%;background:${col}"></span></span><span class="val">${fmt(v, m.d)}${sd != null ? '<span class="hint" style="font-size:.7rem"> ±' + fmt(sd, m.d) + '</span>' : ''}</span></div>`; });
+    }
+    html += `</div><div class="verdict"><span>ML vs RFC:</span>${verdictPill(DATA.pv.ml_vs_rto[curProf][m.pv], m.better)}</div>`;
+    card.innerHTML = html; box.appendChild(card);
+  });
+  document.querySelectorAll(".sm").forEach(b => b.classList.toggle("sel", b.dataset.p === curProf));
+}
+(function tabs(){ const t = $("#prof-tabs"); PROFILES.forEach(([k]) => { const b = document.createElement("button"); b.textContent = k; b.dataset.p = k; b.setAttribute("aria-pressed", "false"); b.addEventListener("click", () => { curProf = k; renderProfile(); }); t.appendChild(b); }); })();
+
+(function smallMultiples(){
+  const box = $("#small-mult");
+  PROFILES.filter(p => p[0] !== "stable").forEach(([k]) => {
+    const b = document.createElement("button"); b.className = "sm"; b.dataset.p = k; b.setAttribute("aria-label", "Open " + k);
+    b.addEventListener("click", () => { curProf = k; renderProfile(); $("#results .panel").scrollIntoView({behavior: reduced ? "auto" : "smooth", block: "start"}); });
+    const svg = svgEl("svg", {viewBox: "0 0 300 200"}, b); box.appendChild(b);
+    const R = DATA.res[k], M = {l: 40, r: 12, t: 44, b: 32};
+    const xs = MODES.map(([m]) => [R[m].unnec - (R[m].unnec_sd || 0), R[m].unnec + (R[m].unnec_sd || 0)]).flat();
+    const ys = MODES.map(([m]) => [R[m].goodput - R[m].goodput_sd, R[m].goodput + R[m].goodput_sd]).flat();
+    const xt = niceTicks(Math.max(0, Math.min(...xs)), Math.max(...xs), 4), yt = niceTicks(Math.min(...ys), Math.max(...ys), 3);
+    const sx = v => M.l + (v - xt[0]) / (xt[xt.length - 1] - xt[0]) * (300 - M.l - M.r), sy = v => 200 - M.b - (v - yt[0]) / (yt[yt.length - 1] - yt[0]) * (200 - M.t - M.b);
+    txt(svg, 8, 17, k, "t-ink", {"font-size": 13, "font-weight": 600});
+    yt.forEach(t => { svgEl("line", {x1: M.l, x2: 300 - M.r, y1: sy(t), y2: sy(t), class: "gridl"}, svg); txt(svg, M.l - 5, sy(t) + 3, fmt(t, t < 1 ? 2 : 1), "t-3", {"text-anchor": "end", "font-size": 9}); });
+    xt.forEach(t => txt(svg, sx(t), 200 - M.b + 13, t, "t-3", {"text-anchor": "middle", "font-size": 9}));
+    txt(svg, 300 - M.r, 196, "unnecessary resends →", "t-3", {"text-anchor": "end", "font-size": 9});
+    txt(svg, M.l - 30, M.t - 12, "goodput MB/s ↑", "t-3", {"font-size": 9});
+    MODES.forEach(([m]) => { const cls = m === "rto" ? "rto" : m === "ml" ? "ml" : "k2"; const x = sx(R[m].unnec), y = sy(R[m].goodput);
+      svgEl("line", {x1: sx(R[m].unnec - (R[m].unnec_sd || 0)), x2: sx(R[m].unnec + (R[m].unnec_sd || 0)), y1: y, y2: y, class: "k-" + cls, "stroke-width": 1.2, opacity: 0.6}, svg);
+      svgEl("line", {x1: x, x2: x, y1: sy(R[m].goodput - R[m].goodput_sd), y2: sy(R[m].goodput + R[m].goodput_sd), class: "k-" + cls, "stroke-width": 1.2, opacity: 0.6}, svg);
+      svgEl("circle", {cx: x, cy: y, r: 6, class: "f-" + cls + " k-surface", "stroke-width": 2}, svg); });
+  });
+})();
+
+(function heat(){
+  const cols = [["goodput_MBps", "Goodput", 1], ["duration", "Time", -1], ["retransmissions", "Retx", -1], ["unnecessary_retx", "Unneeded", -1], ["recovery_ms", "Recovery", -1], ["overhead_pct", "Overhead", -1]];
+  const tbl = $("#heat"); let cmp = "ml_vs_rto";
+  function draw(){
+    tbl.innerHTML = "<thead><tr><th>Network</th>" + cols.map(c => `<th>${c[1]}</th>`).join("") + "</tr></thead>";
+    const tb = document.createElement("tbody");
+    PROFILES.forEach(([p]) => {
+      const tr = document.createElement("tr"); let h = `<td>${p}</td>`;
+      cols.forEach(([m, , dir]) => { const v = (DATA.pv[cmp][p] || {})[m];
+        if (!v || v[0] == null){ h += `<td class="cellv" style="color:var(--ink-3)">–</td>`; return; }
+        const g = v[0] * dir, a = Math.min(Math.abs(g) / 25, 1) * 48, col = g >= 0 ? "var(--good)" : "var(--bad)";
+        h += `<td class="cellv" style="background:color-mix(in srgb, ${col} ${a.toFixed(0)}%, var(--surface))">${v[0] > 0 ? "+" : ""}${fmt(v[0], 0)} %${v[1] < 0.05 ? "*" : ""}</td>`; });
+      tr.innerHTML = h; tb.appendChild(tr);
+    });
+    tbl.appendChild(tb);
+    document.querySelectorAll("#heat-cmp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.cmp === cmp)));
+  }
+  document.querySelectorAll("#heat-cmp button").forEach(b => b.addEventListener("click", () => { cmp = b.dataset.cmp; draw(); }));
+  draw();
+})();
+
+(function timeline(){
+  const svg = $("#timeline"); let which = "changing";
+  const notes = {
+    changing: "Profile 'changing', seed 1000. In the high-delay phase the ML timeout sits just above the latest burst of RTTs; while the delay is still rising, the next packets take longer and their timers fire first (dense ticks between 1.4 s and 1.9 s): 264 timeouts against 73 for RFC 6298.",
+    jitter: "Profile 'jitter_heavy', seed 1000. Delay spikes inflate the RFC timeout for many samples afterwards. The ML timeout stays close to the actual tail of the RTTs, so real losses are repaired sooner."
+  };
+  function draw(){
+    clear(svg); const D = which === "changing" ? DATA.tl_changing : DATA.tl_jitter;
+    const Wd = 900, M = {l: 48, r: 16, t: 10, b: 30}, gap = 34, ph = (470 - M.t - M.b - gap) / 2;
+    const tEnd = Math.max(D.rto.end, D.ml.end), allR = [...D.rto.rto, ...D.ml.rto].map(p => p[1]).sort((a, b) => a - b);
+    const yMax = Math.min(allR[Math.floor(allR.length * 0.985)] * 1.2, Math.max(...allR));
+    const yt = niceTicks(0, yMax, 4), top = yt[yt.length - 1];
+    const sx = t => M.l + t / tEnd * (Wd - M.l - M.r);
+    [["rto", "RFC 6298"], ["ml", "ML estimator"]].forEach(([m, label], pi) => {
+      const y0 = M.t + pi * (ph + gap), sy = v => y0 + ph - Math.min(v, top) / top * (ph - 18);
+      const g = svgEl("g", null, svg), T = D[m];
+      yt.forEach(t => { svgEl("line", {x1: M.l, x2: Wd - M.r, y1: sy(t), y2: sy(t), class: "gridl"}, g); txt(g, M.l - 6, sy(t) + 4, t, "t-3", {"text-anchor": "end", "font-size": 10}); });
+      txt(g, M.l + 4, y0 + 12, label + " · " + T.to.length + " timeouts", "t-ink", {"font-size": 12, "font-weight": 600});
+      T.s.forEach(([t, v]) => svgEl("circle", {cx: sx(t), cy: sy(v), r: 1.8, class: "f-muted", opacity: 0.7}, g));
+      if (m === "ml"){ let d = ""; D.ml.conv.forEach(([t, v], i) => { d += (i ? `L${sx(t)} ${sy(D.ml.conv[i - 1][1])} L` : "M") + `${sx(t)} ${sy(v)} `; }); svgEl("path", {d, fill: "none", class: "k-rto", "stroke-width": 1.2, "stroke-dasharray": "4 3", opacity: 0.8}, g); }
+      let d = ""; T.rto.forEach(([t, v], i) => { d += (i ? `L${sx(t)} ${sy(T.rto[i - 1][1])} L` : "M") + `${sx(t)} ${sy(v)} `; }); d += `L${sx(T.end)} ${sy(T.rto[T.rto.length - 1][1])}`;
+      svgEl("path", {d, fill: "none", class: m === "ml" ? "k-ml" : "k-rto", "stroke-width": 1.8}, g);
+      T.to.forEach(t => svgEl("line", {x1: sx(t), x2: sx(t), y1: y0 + 18, y2: y0 + 26, class: "k-ink", "stroke-width": 1.2, opacity: 0.8}, g));
+      txt(g, 8, y0 + ph / 2, "ms", "t-3", {"font-size": 10});
+    });
+    niceTicks(0, tEnd, 8).filter(t => t <= tEnd).forEach(t => txt(svg, sx(t), 470 - 10, fmt(t, t % 1 ? 1 : 0) + " s", "t-3", {"text-anchor": "middle", "font-size": 10}));
+    $("#tl-note").textContent = notes[which] + (which === "changing" ? "" : ` RFC: ${D.rto.to.length} timeouts, ML: ${D.ml.to.length}.`) + " Dashed line in the lower panel: what RFC 6298 would have chosen.";
+    document.querySelectorAll("#tl-pick button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tl === which)));
+  }
+  document.querySelectorAll("#tl-pick button").forEach(b => b.addEventListener("click", () => { which = b.dataset.tl; draw(); }));
+  draw();
+})();
+
+/* ---------------- §9 offline ---------------- */
+(function offline(){
+  $("#off-n").textContent = DATA.offline_rows.toLocaleString("en-US") + " decisions · " + DATA.offline_runs + " runs";
+  const tb = $("#off-table tbody");
+  ["ALL", ...PROFILES.map(p => p[0])].forEach(p => { const o = DATA.off[p]; if (!o) return; const tr = document.createElement("tr");
+    const b = (a, c) => a < c ? ' style="color:var(--good);font-weight:600"' : "";
+    tr.innerHTML = `<td class="mono" style="${p === "ALL" ? "font-weight:600" : ""}">${p === "ALL" ? "all networks" : p}</td><td class="n">${fmt(o.conventional[0], 1)}</td><td class="n"${b(o.ml[0], o.conventional[0])}>${fmt(o.ml[0], 1)}</td><td class="n">${fmt(o.conventional[1] * 100, 1)} %</td><td class="n"${b(o.ml[1], o.conventional[1])}>${fmt(o.ml[1] * 100, 1)} %</td>`; tb.appendChild(tr); });
+  const svg = $("#lopo-chart"), L = DATA.lopo, items = [["RFC 6298", L.conventional[0], "f-rto"], ["ML, trained with it", L.ml_trained_with_profile[0], "f-ml"], ["ML, never saw it", L.ml_trained_without_profile[0], "f-bad"]];
+  const max = Math.max(...items.map(i => i[1])) * 1.15, M = {l: 150, r: 50};
+  items.forEach(([l, v, c], i) => { const y = 14 + i * 44, w = v / max * (520 - M.l - M.r);
+    txt(svg, M.l - 10, y + 17, l, "t-2", {"text-anchor": "end", "font-size": 12});
+    svgEl("rect", {x: M.l, y, width: w, height: 24, rx: 3, class: c}, svg);
+    txt(svg, M.l + w + 8, y + 17, fmt(v, 1) + " ms", "t-ink", {"font-size": 12, "font-weight": 600}); });
+})();
+
+/* ---------------- commands ---------------- */
+(function cmds(){
+  const C = [
+    ["Run every test", "python3 -m unittest discover -s tests -t ."],
+    ["Live demo, both strategies on one network", "python3 demo.py --profile jitter_heavy --compare"],
+    ["Live demo with the ML timeout", "python3 demo.py --profile changing --timeout-mode ml"],
+    ["Rebuild the results tables and plots", "python3 -m experiments.report"]
+  ];
+  const box = $("#cmds");
+  C.forEach(([l, c]) => { const w = document.createElement("div"); w.innerHTML = `<div class="hint" style="margin-bottom:4px">${l}</div>`; const row = document.createElement("div"); row.className = "cmd"; const code = document.createElement("code"); code.textContent = c; const b = document.createElement("button"); b.className = "btn"; b.textContent = "Copy";
+    b.addEventListener("click", () => { const done = () => { b.textContent = "Copied"; setTimeout(() => b.textContent = "Copy", 1400); };
+      const fallback = () => { const r = document.createRange(); r.selectNodeContents(code); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "Selected"; setTimeout(() => b.textContent = "Copy", 1400); };
+      try { navigator.clipboard.writeText(c).then(done, fallback); } catch (e) { fallback(); } });
+    row.append(code, b); w.appendChild(row); box.appendChild(w); });
+})();
+
+renderProfile();
+})();
+</script>

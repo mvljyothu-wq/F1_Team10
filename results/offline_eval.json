@@ -1,0 +1,37 @@
+{
+  "model": "models/rto_model.json",
+  "target": "direct",
+  "margin": 1.0,
+  "test_rows": 25721,
+  "test_runs": 42,
+  "lopo": {
+    "profile": "changing",
+    "conventional": {
+      "n": 3779,
+      "mae_ms": 18.86899515744906,
+      "median_ae_ms": 2.9919999999999947,
+      "under_target_rate": 0.39984122783805237,
+      "spurious_fraction": 0.11669432250438527,
+      "mean_excess_ms": 26.65257092151676,
+      "mean_ratio": 1.2317844491833554
+    },
+    "ml_trained_with_profile": {
+      "n": 3779,
+      "mae_ms": 16.17677635235625,
+      "median_ae_ms": 5.284360105994146,
+      "under_target_rate": 0.3082826144482667,
+      "spurious_fraction": 0.11137302638745487,
+      "mean_excess_ms": 19.26679362689004,
+      "mean_ratio": 1.2535764716910194
+    },
+    "ml_trained_without_profile": {
+      "n": 3779,
+      "mae_ms": 25.280753918374486,
+      "median_ae_ms": 15.524431764563474,
+      "under_target_rate": 0.27150039693040484,
+      "spurious_fraction": 0.10189785502704757,
+      "mean_excess_ms": 30.240285370494167,
+      "mean_ratio": 1.4050642992581268
+    }
+  }
+}
